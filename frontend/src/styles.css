@@ -26,7 +26,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background:
 
 /* Header */
 .site-header .topbar{ position: sticky; top: 0; z-index: 100; backdrop-filter: saturate(180%) blur(6px); }
-.brand{ cursor:pointer; font-weight:600; letter-spacing:.2px; }
+.brand{ cursor:pointer; font-weight:600; letter-spacing:.2px; display:flex; align-items:center; }
+.brand-logo{ height:28px; width:auto; display:block; }
 
 /* Navigation hover + focus */
 .main-nav a[mat-button], .main-nav button[mat-button]{ position:relative; overflow:hidden; }

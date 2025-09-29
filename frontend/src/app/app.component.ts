@@ -15,7 +15,9 @@ import { SignalRService } from './core/signalr.service';
   <div class="scroll-progress" [style.width.%]="scrollProgress" aria-hidden="true"></div>
   <header class="site-header reveal" role="banner">
     <mat-toolbar color="primary" class="topbar">
-      <span class="brand" (click)="goHome()" tabindex="0" aria-label="Go to home">Project Pulse Management</span>
+      <span class="brand" (click)="goHome()" tabindex="0" aria-label="Go to home">
+        <img src="project.svg" class="brand-logo" alt="Project Pulse" />
+      </span>
       <span class="spacer"></span>
       <nav class="main-nav" aria-label="Primary">
         <a mat-button *ngIf="(token$ | async)" routerLink="/projects">Projects</a>
