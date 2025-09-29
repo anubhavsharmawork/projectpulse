@@ -1,0 +1,27 @@
+{
+  "name": "project-pulse-api",
+  "description": "Real-time project management API (.NET 6 + SignalR) for Heroku",
+  "keywords": ["dotnet", ".NET 6", "SignalR", "CQRS", "MediatR", "Heroku"],
+  "env": {
+    "ASPNETCORE_ENVIRONMENT": { "value": "Production" },
+    "JWT__Issuer": { "required": true },
+    "JWT__Audience": { "required": true },
+    "JWT__Key": { "required": true },
+    "S3__Bucket": { "required": true },
+    "S3__Region": { "required": true },
+    "AWS_ACCESS_KEY_ID": { "required": true },
+    "AWS_SECRET_ACCESS_KEY": { "required": true },
+    "DROP_SCHEMA_BEFORE_MIGRATE": { "value": "true" },
+    "WIPE_DB_ON_STARTUP": { "value": "true" }
+  },
+  "addons": [
+    "heroku-postgresql:essential-0",
+    "papertrail"
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
+}

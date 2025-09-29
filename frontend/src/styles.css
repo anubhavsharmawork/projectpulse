@@ -1,0 +1,98 @@
+/* Angular Material theme placeholder */
+
+/* Design tokens for spacing, radius, shadows */
+:root{
+  --space-2: .25rem; --space-3: .5rem; --space-4: .75rem; --space-5: 1rem; --space-6: 1.5rem; --space-8: 2rem;
+  --radius-4: 4px; --radius-6: 6px; --radius-8: 8px;
+  --shadow-1: 0 1px 2px rgba(0,0,0,.06);
+  --shadow-2: 0 6px 20px rgba(0,0,0,.08);
+  --brand: #1976d2; /* primary */
+  --brand-600:#1565c0; --brand-700:#0d47a1;
+  --ink:#0f172a; --muted:#607d8b; --surface:#ffffff; --bg:#f6f8fb;
+  --accent:#00bcd4; --good:#4caf50; --warning:#ff9800; --danger:#e53935;
+}
+
+/* Global theming and layout */
+html, body { height: 100%; }
+html{ scroll-behavior: smooth; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background: var(--bg); color: var(--ink); }
+
+/* Top progress bar */
+.scroll-progress{ position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg,var(--accent),var(--brand)); z-index: 1100; box-shadow: var(--shadow-1); transition: width .15s ease-out; }
+
+/* Reveal on scroll */
+.reveal{ opacity:0; transform: translateY(8px); transition: opacity .5s ease, transform .5s ease; }
+.reveal.in{ opacity:1; transform: none; }
+
+/* Header */
+.site-header .topbar{ position: sticky; top: 0; z-index: 100; backdrop-filter: saturate(180%) blur(6px); }
+.brand{ cursor:pointer; font-weight:600; letter-spacing:.2px; }
+
+/* Navigation hover + focus */
+.main-nav a[mat-button], .main-nav button[mat-button]{ position:relative; overflow:hidden; }
+.main-nav a[mat-button]::after, .main-nav button[mat-button]::after{ content:""; position:absolute; left:10%; right:10%; bottom:.35rem; height:2px; background: currentColor; transform:scaleX(0); transform-origin:left; transition: transform .25s ease; opacity:.8; }
+.main-nav a[mat-button]:hover::after, .main-nav a[mat-button]:focus-visible::after,
+.main-nav button[mat-button]:hover::after, .main-nav button[mat-button]:focus-visible::after{ transform:scaleX(1); }
+
+/* Hero */
+.hero{ position:relative; padding: clamp(3rem, 8vw, 6rem) 0; background: linear-gradient(180deg, #e3f2fd 0%, transparent 60%); overflow:hidden; }
+.hero-bg{ position:absolute; inset:0; pointer-events:none; background:
+  radial-gradient(700px 200px at 10% -10%, rgba(25,118,210,.15), transparent),
+  radial-gradient(600px 200px at 90% -20%, rgba(0,188,212,.18), transparent);
+}
+.hero-inner{ position:relative; display:grid; gap: var(--space-5); }
+.uvp{ font-size: clamp(1.75rem, 3vw, 2.25rem); margin:0; line-height:1.25; }
+.tag{ margin:0; color: var(--muted); max-width: 60ch; }
+.cta{ display:flex; gap: var(--space-4); margin-top: var(--space-4); }
+.cta-btn{ padding: .6rem 1rem; border-radius: var(--radius-8); border: 0; background: var(--brand); color:#fff; box-shadow: var(--shadow-2); cursor:pointer; }
+.cta-btn:hover, .cta-btn:focus-visible{ background: var(--brand-600); }
+.ghost-btn{ padding: .55rem 1rem; border-radius: var(--radius-8); border:1px solid var(--brand); color: var(--brand); background: transparent; cursor:pointer; }
+.ghost-btn:hover, .ghost-btn:focus-visible{ background: rgba(25,118,210,.06); }
+
+/* Container */
+.container { max-width: 1100px; margin: 0 auto; padding: var(--space-5); }
+
+/* Forms */
+input, button { font-size: 14px; }
+input { padding: .5rem .6rem; border: 1px solid #cfd8dc; border-radius: var(--radius-6); background: var(--surface); color: var(--ink); }
+button { padding: .5rem .9rem; border: 1px solid #cfd8dc; background: var(--surface); border-radius: var(--radius-6); cursor: pointer; }
+button:hover { background: #f1f5f9; }
+
+/* Focus visible for accessibility */
+:focus-visible{ outline: 3px solid rgba(25,118,210,.5); outline-offset: 2px; border-radius: 6px; }
+
+/* Footer */
+footer.site-footer { margin-top: 2rem; padding: 1rem 0; border-top: 1px solid #e0e0e0; color: var(--muted); background: #fff; }
+footer .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+footer .social a { color: var(--muted); margin-left: .75rem; text-decoration: none; display:inline-flex; align-items:center; gap:.35rem; position:relative; }
+footer .social a::after{ content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px; background: currentColor; transform:scaleX(0); transform-origin:left; transition: transform .25s ease; }
+footer .social a:hover::after, footer .social a:focus-visible::after{ transform:scaleX(1); }
+footer .social a:hover{ color: #37474f; }
+
+/* Skills/Progress */
+.skills{ margin: var(--space-8) 0; }
+.skills-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: var(--space-5); }
+.skill{ background: var(--surface); border:1px solid #e6eef5; border-radius: var(--radius-8); padding: var(--space-5); box-shadow: var(--shadow-1); }
+.skill-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-3); }
+.skill-bar{ position:relative; height: 8px; background:#e3f2fd; border-radius: 999px; overflow:hidden; }
+.skill-fill{ position:absolute; inset:0 auto 0 0; width: 0; background: linear-gradient(90deg, var(--brand), var(--accent)); border-radius: 999px; }
+.skill-fill.animate{ animation: fillWidth 1.2s ease forwards; }
+@keyframes fillWidth{ to { width: var(--target, 0%); } }
+
+/* Comments list polish (subtle interaction) */
+.comment-list{ list-style:none; padding:0; display:flex; flex-direction:column; gap:.25rem }
+.comment-item{ background:#fafafa; border:1px solid #eee; border-radius:6px; padding:.5rem; display:flex; justify-content:space-between; align-items:center; transition: transform .12s ease, box-shadow .12s ease; }
+.comment-item:hover{ transform: translateY(-1px); box-shadow: var(--shadow-1); }
+.link{ background:none; border:none; color: var(--brand); cursor:pointer }
+
+/* Helpers */
+.ml-sm{ margin-left: .75rem; }
+.small{ font-size: .875rem; }
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+/* Ensure contrast for primary toolbar items */
+.mat-toolbar.mat-primary{ color:#fff; }
+.mat-toolbar a[mat-button], .mat-toolbar button[mat-button]{ color:#fff; }
+
+/* Snackbar error styling */
+.snack-error .mdc-snackbar__surface{ background:#e53935 !important; color:#fff !important; }

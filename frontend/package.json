@@ -1,0 +1,37 @@
+{
+  "name": "pm-frontend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "ng": "ng",
+    "start": "serve -s dist -l $PORT",
+    "start:dev": "ng serve",
+    "build": "ng build",
+    "heroku-postbuild": "ng build --configuration production"
+  },
+  "dependencies": {
+    "@angular/animations": "16.2.12",
+    "@angular/common": "16.2.12",
+    "@angular/compiler": "16.2.12",
+    "@angular/core": "16.2.12",
+    "@angular/forms": "16.2.12",
+    "@angular/material": "16.2.14",
+    "@angular/platform-browser": "16.2.12",
+    "@angular/platform-browser-dynamic": "16.2.12",
+    "@angular/router": "16.2.12",
+    "rxjs": "7.8.1",
+    "tslib": "2.6.2",
+    "zone.js": "0.13.3",
+    "@microsoft/signalr": "7.0.14",
+    "serve": "14.2.3"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "16.2.9",
+    "@angular/cli": "16.2.9",
+    "@angular/compiler-cli": "16.2.12",
+    "typescript": "5.1.6"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

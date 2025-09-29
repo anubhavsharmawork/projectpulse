@@ -1,0 +1,5 @@
+build:
+  docker:
+    web: Dockerfile
+run:
+  web: bash -c "dotnet ProjectApi.dll --urls=http://0.0.0.0:$PORT"
