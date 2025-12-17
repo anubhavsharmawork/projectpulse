@@ -3,19 +3,21 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Infrastructure
 {
+    [ExcludeFromCodeCoverage]
     public static class DependencyInjection
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // Ensure consistent timestamp behavior on Npgsql across environments
+            // Configure Npgsql timestamp behavior for consistency
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             services.AddDbContext<AppDbContext>(options =>
             {
-                // Prefer Heroku DATABASE_URL if present
+                // Use Heroku DATABASE_URL if available, otherwise fall back to connection string
                 var databaseUrl = configuration["DATABASE_URL"] ?? Environment.GetEnvironmentVariable("DATABASE_URL");
                 string? conn = null;
                 if (!string.IsNullOrWhiteSpace(databaseUrl))
@@ -29,15 +31,15 @@ namespace Infrastructure
 
                 options.UseNpgsql(conn, npgsql =>
                 {
-                    // Explicitly set the migrations assembly to the Infrastructure project where migrations live
+                    // Set migrations assembly to Infrastructure project
                     npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name);
                 });
             });
 
-            // Expose EF context through the application-layer interface
+            // Register application database context interface
             services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
-            // JWT and Storage services
+            // Register JWT and storage services
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IStorageService, S3StorageService>();
 
@@ -46,7 +48,7 @@ namespace Infrastructure
 
         private static string ConvertDatabaseUrlToNpgsql(string databaseUrl)
         {
-            // Expected format: postgres://username:password@host:port/database
+            // Parse Heroku-style postgres:// URL
             var uri = new Uri(databaseUrl);
             var userInfo = uri.UserInfo.Split(':');
             var username = Uri.UnescapeDataString(userInfo[0]);
@@ -55,7 +57,7 @@ namespace Infrastructure
             var port = uri.Port;
             var database = uri.AbsolutePath.Trim('/');
 
-            // Enforce SSL for Heroku
+            // Build Npgsql connection string with SSL enabled
             return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
         }
     }

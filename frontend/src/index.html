@@ -5,12 +5,38 @@
   <title>Task Management</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Project Pulse - An accessible project management application">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Critical above-the-fold CSS for optimal initial rendering -->
+  <style>
+    /* Critical above-the-fold styles */
+    body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+    .site-header, .hero { opacity: 1 !important; transform: none !important; }
+    .hero { position: relative; padding: clamp(3rem, 8vw, 6rem) 0; }
+    .uvp { font-size: clamp(1.75rem, 3vw, 2.25rem); margin: 0; line-height: 1.25; }
+    .tag { margin: 0; color: #607d8b; max-width: 60ch; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+    .topbar { display: flex; align-items: center; padding: 0 1rem; min-height: 64px; background: #1976d2; color: #fff; }
+    .brand { font-weight: 600; cursor: pointer; }
+    .spacer { flex: 1; }
+    .main-nav { display: flex; align-items: center; gap: 0.5rem; }
+    .nav-btn { padding: 0.5rem 1rem; background: transparent; border: none; color: #fff; text-decoration: none; border-radius: 4px; cursor: pointer; }
+    .nav-btn:hover { background: rgba(255,255,255,0.1); }
+  </style>
+  
+  <!-- Preconnect to external font origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Roboto font with deferred loading -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 </head>
-<body class="mat-typography">
+<body>
+  <!-- Skip link for keyboard navigation accessibility (WCAG 2.4.1) -->
+  <a href="#main-content" class="skip-link" id="skip-link">Skip to main content</a>
   <app-root>Loading...</app-root>
 </body>
 </html>

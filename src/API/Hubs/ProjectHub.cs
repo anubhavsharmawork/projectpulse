@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics.CodeAnalysis;
 
 namespace API.Hubs
 {
+    [ExcludeFromCodeCoverage]
     [Authorize]
     public class ProjectHub : Hub
     {

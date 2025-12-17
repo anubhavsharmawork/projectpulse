@@ -7,8 +7,9 @@ namespace Application.Common.Interfaces
     {
         DbSet<User> Users { get; }
         DbSet<Project> Projects { get; }
-        DbSet<TaskItem> Tasks { get; }
+        DbSet<WorkItem> WorkItems { get; }
         DbSet<Comment> Comments { get; }
+        DbSet<MentionNotification> MentionNotifications { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -1,0 +1,320 @@
+<div class="page-header">
+  <h2 id="work-items-heading">Work Items</h2>
+  <p>Manage your epics, user stories, and tasks</p>
+</div>
+
+<!-- Epics Section -->
+<section class="section" aria-labelledby="epics-heading">
+  <h3 id="epics-heading">Epics</h3>
+  <form (ngSubmit)="createEpic()" class="form-inline" role="form" aria-label="Create new epic">
+    <label for="epic-title" class="sr-only">Epic title</label>
+    <input id="epic-title"
+           [(ngModel)]="epicTitle" 
+           name="epicTitle" 
+           placeholder="Epic title" 
+           required
+           aria-required="true">
+    <label for="epic-desc" class="sr-only">Epic description</label>
+    <input id="epic-desc"
+           [(ngModel)]="epicDescription" 
+           name="epicDescription" 
+           placeholder="Description"
+           aria-label="Epic description (optional)">
+    <button type="submit" 
+            [disabled]="busy"
+            [attr.aria-busy]="busy"
+            aria-label="Add new epic">
+      Add Epic
+    </button>
+  </form>
+  
+  <ul class="work-item-list" 
+      role="tree" 
+      aria-labelledby="epics-heading"
+      (keydown)="onTreeKeydown($event, 'epic')">
+    <li *ngFor="let epic of epics; let i = index" 
+        class="work-item epic"
+        role="treeitem"
+        [attr.aria-expanded]="expandedEpics[epic.id] || false"
+        [attr.aria-label]="'Epic: ' + epic.title + (epic.description ? ', ' + epic.description : '')"
+        [attr.tabindex]="i === 0 ? 0 : -1"
+        [attr.aria-level]="1"
+        [attr.aria-setsize]="epics.length"
+        [attr.aria-posinset]="i + 1">
+      <div class="work-item-head">
+        <div>
+          <span class="badge epic-badge" aria-hidden="true">Epic</span>
+          <span class="work-item-title" [id]="'epic-title-' + epic.id">{{epic.title}}</span>
+          <div class="work-item-desc" *ngIf="epic.description">{{epic.description}}</div>
+        </div>
+        <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for epic: ' + epic.title">
+          <button (click)="toggleExpand(epic.id)"
+                  [attr.aria-expanded]="expandedEpics[epic.id] || false"
+                  [attr.aria-controls]="'epic-children-' + epic.id"
+                  [attr.aria-label]="(expandedEpics[epic.id] ? 'Collapse' : 'Expand') + ' user stories for ' + epic.title">
+            {{expandedEpics[epic.id] ? 'Collapse' : 'Expand'}}
+
+          </button>
+          <button (click)="deleteWorkItem(epic.id)"
+                  [attr.aria-describedby]="'epic-title-' + epic.id"
+                  aria-label="Delete epic">
+            Delete
+          </button>
+        </div>
+      </div>
+      
+      <!-- User Stories under this Epic -->
+      <div *ngIf="expandedEpics[epic.id]" 
+           class="children"
+           [id]="'epic-children-' + epic.id"
+           role="group"
+           [attr.aria-label]="'User stories under ' + epic.title">
+        <h4 id="stories-heading-{{epic.id}}">User Stories</h4>
+        <form (ngSubmit)="createUserStory(epic.id)" class="form-inline" role="form" [attr.aria-label]="'Create user story under ' + epic.title">
+          <label [for]="'story-title-' + epic.id" class="sr-only">User Story title</label>
+          <input [id]="'story-title-' + epic.id"
+                 [(ngModel)]="storyTitles[epic.id]" 
+                 [name]="'storyTitle-' + epic.id" 
+                 placeholder="User Story title" 
+                 required
+                 aria-required="true">
+          <button type="submit" 
+                  [disabled]="busy"
+                  [attr.aria-busy]="busy"
+                  aria-label="Add user story">
+            Add Story
+          </button>
+        </form>
+        <ul class="work-item-list nested" 
+            role="group"
+            [attr.aria-labelledby]="'stories-heading-' + epic.id">
+          <li *ngFor="let story of getStoriesForEpic(epic.id); let j = index" 
+              class="work-item user-story"
+              role="treeitem"
+              [attr.aria-expanded]="expandedStories[story.id] || false"
+              [attr.aria-label]="'User Story: ' + story.title + (story.description ? ', ' + story.description : '')"
+              [attr.aria-level]="2"
+              [attr.tabindex]="-1">
+            <div class="work-item-head">
+              <div>
+                <span class="badge story-badge" aria-hidden="true">Story</span>
+                <span class="work-item-title" [id]="'story-title-id-' + story.id">{{story.title}}</span>
+                <div class="work-item-desc" *ngIf="story.description">{{story.description}}</div>
+              </div>
+              <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for story: ' + story.title">
+                <button (click)="toggleStoryExpand(story.id)"
+                        [attr.aria-expanded]="expandedStories[story.id] || false"
+                        [attr.aria-controls]="'story-tasks-' + story.id"
+                        [attr.aria-label]="(expandedStories[story.id] ? 'Collapse' : 'Expand') + ' tasks for ' + story.title">
+                  {{expandedStories[story.id] ? 'Hide Tasks' : 'Show Tasks'}}
+                </button>
+                <button (click)="deleteWorkItem(story.id)"
+                        [attr.aria-describedby]="'story-title-id-' + story.id"
+                        aria-label="Delete user story">
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <!-- Tasks under this User Story -->
+            <div *ngIf="expandedStories[story.id]" 
+                 class="tasks-section"
+                 [id]="'story-tasks-' + story.id"
+                 role="group"
+                 [attr.aria-label]="'Tasks under ' + story.title">
+              <h5 id="tasks-heading-{{story.id}}">Tasks</h5>
+              <form (ngSubmit)="createTaskForStory(story.id)" class="form-inline" role="form" [attr.aria-label]="'Create task under ' + story.title">
+                <label [for]="'task-title-' + story.id" class="sr-only">Task title</label>
+                <input [id]="'task-title-' + story.id"
+                       [(ngModel)]="taskTitles[story.id]" 
+                       [name]="'taskTitle-' + story.id" 
+                       placeholder="Task title" 
+                       required
+                       aria-required="true">
+                <button type="submit" 
+                        [disabled]="busy"
+                        [attr.aria-busy]="busy"
+                        aria-label="Add task">
+                  Add Task
+                </button>
+              </form>
+              <ul class="work-item-list nested" 
+                  role="list"
+                  [attr.aria-labelledby]="'tasks-heading-' + story.id">
+                <li *ngFor="let task of tasksForStory[story.id]; let k = index" 
+                    class="work-item task"
+                    [class.completed]="task.isCompleted"
+                    role="listitem"
+                    [attr.aria-label]="'Task: ' + task.title + (task.isCompleted ? ', completed' : ', pending')">
+                  <div class="work-item-head">
+                    <div>
+                      <span class="badge task-badge" aria-hidden="true">Task</span>
+                      <span class="work-item-title" [id]="'task-title-id-' + task.id">{{task.title}}</span>
+                      <div class="work-item-desc" *ngIf="task.description">{{task.description}}</div>
+                      <div *ngIf="task.isCompleted" role="status">
+                        <span aria-hidden="true">&#10003;</span>
+                        <span class="sr-only">Completed</span>
+                        <span>
+                          Completed<span *ngIf="task.completedAt"> on {{ task.completedAt | date:'medium' }}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for task: ' + task.title">
+                      <button *ngIf="!task.isCompleted" 
+                              (click)="completeTask(story.id, task.id)"
+                              [attr.aria-describedby]="'task-title-id-' + task.id"
+                              aria-label="Mark task as complete">
+                        Complete
+                      </button>
+                      <button (click)="deleteTask(story.id, task.id)"
+                              [attr.aria-describedby]="'task-title-id-' + task.id"
+                              aria-label="Delete task">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  <app-comments [workItemId]="task.id" [attr.aria-label]="'Comments for task: ' + task.title"></app-comments>
+                </li>
+              </ul>
+              <p *ngIf="tasksForStory[story.id]?.length === 0" role="status" aria-live="polite" class="small">
+                No tasks yet. Add your first task above.
+              </p>
+            </div>
+            <app-comments [workItemId]="story.id" [attr.aria-label]="'Comments for story: ' + story.title"></app-comments>
+          </li>
+        </ul>
+      </div>
+      <app-comments [workItemId]="epic.id" [attr.aria-label]="'Comments for epic: ' + epic.title"></app-comments>
+    </li>
+  </ul>
+  <p *ngIf="epics.length === 0" role="status" aria-live="polite" class="small">
+    No epics yet. Create your first epic above.
+  </p>
+</section>
+
+<!-- Standalone User Stories (no parent) -->
+<section class="section" aria-labelledby="standalone-stories-heading">
+  <h3 id="standalone-stories-heading">Standalone User Stories</h3>
+  <form (ngSubmit)="createUserStory()" class="form-inline" role="form" aria-label="Create standalone user story">
+    <label for="standalone-story-title" class="sr-only">User Story title</label>
+    <input id="standalone-story-title"
+           [(ngModel)]="storyTitle" 
+           name="storyTitle" 
+           placeholder="User Story title" 
+           required
+           aria-required="true">
+    <label for="standalone-story-desc" class="sr-only">User Story description</label>
+    <input id="standalone-story-desc"
+           [(ngModel)]="storyDescription" 
+           name="storyDescription" 
+           placeholder="Description"
+           aria-label="User Story description (optional)">
+    <button type="submit" 
+            [disabled]="busy"
+            [attr.aria-busy]="busy"
+            aria-label="Add standalone user story">
+      Add Story
+    </button>
+  </form>
+  <ul class="work-item-list" 
+      role="list" 
+      aria-labelledby="standalone-stories-heading"
+      (keydown)="onListKeydown($event)">
+    <li *ngFor="let story of standaloneStories; let i = index" 
+        class="work-item user-story"
+        role="listitem"
+        [attr.tabindex]="i === 0 ? 0 : -1"
+        [attr.aria-expanded]="expandedStories[story.id] || false"
+        [attr.aria-label]="'User Story: ' + story.title + (story.description ? ', ' + story.description : '')">
+      <div class="work-item-head">
+        <div>
+          <span class="badge story-badge" aria-hidden="true">Story</span>
+          <span class="work-item-title" [id]="'standalone-story-' + story.id">{{story.title}}</span>
+          <div class="work-item-desc" *ngIf="story.description">{{story.description}}</div>
+        </div>
+        <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for story: ' + story.title">
+          <button (click)="toggleStoryExpand(story.id)"
+                  [attr.aria-expanded]="expandedStories[story.id] || false"
+                  [attr.aria-controls]="'standalone-story-tasks-' + story.id"
+                  [attr.aria-label]="(expandedStories[story.id] ? 'Collapse' : 'Expand') + ' tasks for ' + story.title">
+            {{expandedStories[story.id] ? 'Hide Tasks' : 'Show Tasks'}}
+          </button>
+          <button (click)="deleteWorkItem(story.id)"
+                  [attr.aria-describedby]="'standalone-story-' + story.id"
+                  aria-label="Delete user story">
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- Tasks under this Standalone User Story -->
+      <div *ngIf="expandedStories[story.id]" 
+           class="tasks-section"
+           [id]="'standalone-story-tasks-' + story.id"
+           role="group"
+           [attr.aria-label]="'Tasks under ' + story.title">
+        <h5 id="standalone-tasks-heading-{{story.id}}">Tasks</h5>
+        <form (ngSubmit)="createTaskForStory(story.id)" class="form-inline" role="form" [attr.aria-label]="'Create task under ' + story.title">
+          <label [for]="'standalone-task-title-' + story.id" class="sr-only">Task title</label>
+          <input [id]="'standalone-task-title-' + story.id"
+                 [(ngModel)]="taskTitles[story.id]" 
+                 [name]="'taskTitle-standalone-' + story.id" 
+                 placeholder="Task title" 
+                 required
+                 aria-required="true">
+          <button type="submit" 
+                  [disabled]="busy"
+                  [attr.aria-busy]="busy"
+                  aria-label="Add task">
+            Add Task
+          </button>
+        </form>
+        <ul class="work-item-list nested" 
+            role="list"
+            [attr.aria-labelledby]="'standalone-tasks-heading-' + story.id">
+          <li *ngFor="let task of tasksForStory[story.id]; let k = index" 
+              class="work-item task"
+              [class.completed]="task.isCompleted"
+              role="listitem"
+              [attr.aria-label]="'Task: ' + task.title + (task.isCompleted ? ', completed' : ', pending')">
+            <div class="work-item-head">
+              <div>
+                <span class="badge task-badge" aria-hidden="true">Task</span>
+                <span class="work-item-title" [id]="'standalone-task-id-' + task.id">{{task.title}}</span>
+                <div class="work-item-desc" *ngIf="task.description">{{task.description}}</div>
+                <div *ngIf="task.isCompleted" role="status">
+                  <span aria-hidden="true">&#10003;</span>
+                  <span class="sr-only">Completed</span>
+                  <span>
+                    Completed<span *ngIf="task.completedAt"> on {{ task.completedAt | date:'medium' }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for task: ' + task.title">
+                <button *ngIf="!task.isCompleted" 
+                        (click)="completeTask(story.id, task.id)"
+                        [attr.aria-describedby]="'standalone-task-id-' + task.id"
+                        aria-label="Mark task as complete">
+                  Complete
+                </button>
+                <button (click)="deleteTask(story.id, task.id)"
+                        [attr.aria-describedby]="'standalone-task-id-' + task.id"
+                        aria-label="Delete task">
+                  Delete
+                </button>
+              </div>
+            </div>
+            <app-comments [workItemId]="task.id" [attr.aria-label]="'Comments for task: ' + task.title"></app-comments>
+          </li>
+        </ul>
+        <p *ngIf="tasksForStory[story.id]?.length === 0" role="status" aria-live="polite" class="small">
+          No tasks yet. Add your first task above.
+        </p>
+      </div>
+      <app-comments [workItemId]="story.id" [attr.aria-label]="'Comments for story: ' + story.title"></app-comments>
+    </li>
+  </ul>
+  <p *ngIf="standaloneStories.length === 0" role="status" aria-live="polite" class="small">
+    No standalone user stories yet.
+  </p>
+</section>

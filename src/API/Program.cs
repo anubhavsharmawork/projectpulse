@@ -1,14 +1,19 @@
 using API.Hubs;
+using Asp.Versioning;
+using AspNetCoreRateLimit;
 using Infrastructure;
 using Infrastructure.Persistence;
+using Infrastructure.Sql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using System.IO.Compression;
 using System.Text;
 using Application.Auth.Commands; // for MediatR assembly discovery
 
@@ -19,8 +24,80 @@ builder.Host.UseSerilog((ctx, lc) => lc
     .ReadFrom.Configuration(ctx.Configuration)
     .WriteTo.Console());
 
+// Response compression for better performance
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "application/javascript",
+        "application/json",
+        "text/css",
+        "text/html",
+        "text/plain",
+        "image/svg+xml"
+    });
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Optimal;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Optimal;
+});
+
+// ========================================
+// OWASP Security: Rate Limiting (A07)
+// Prevents brute-force attacks on auth endpoints
+// ========================================
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        // Strict limit on auth endpoints to prevent credential stuffing
+        new RateLimitRule
+        {
+            Endpoint = "*:/api/*/auth/*",
+            Period = "1m",
+            Limit = 10
+        },
+        // General API rate limit
+        new RateLimitRule
+        {
+            Endpoint = "*:/api/*",
+            Period = "1m",
+            Limit = 100
+        }
+    };
+});
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddInMemoryRateLimiting();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),
+        new HeaderApiVersionReader("X-Api-Version"));
+})
+.AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Project API", Version = "v1" });
@@ -64,6 +141,9 @@ builder.Services.AddCors(options =>
 
 // SignalR
 builder.Services.AddSignalR();
+
+// Register the real-time notification service for mention notifications
+builder.Services.AddScoped<Application.Common.Interfaces.IRealTimeNotificationService, API.Services.SignalRNotificationService>();
 
 // AuthN/Z
 // Use the same fallback as JwtTokenService to avoid signature mismatches when JWT:Key is not configured
@@ -114,6 +194,7 @@ builder.Services.AddAuthorization(options =>
 
 // Health checks
 builder.Services.AddHealthChecks();
+builder.Services.AddResponseCompression();
 
 var app = builder.Build();
 
@@ -142,10 +223,10 @@ using (var scope = app.Services.CreateScope())
         try
         {
             logger.LogWarning("DROP_SCHEMA_BEFORE_MIGRATE={Drop} -> Dropping schema 'public' before migrations", dropBeforeEnv ?? "(default:true)");
-            await db.Database.ExecuteSqlRawAsync("DROP SCHEMA IF EXISTS public CASCADE;");
-            await db.Database.ExecuteSqlRawAsync("CREATE SCHEMA IF NOT EXISTS public;");
+            await db.Database.ExecuteSqlRawAsync(SqlLoader.DropSchema);
+            await db.Database.ExecuteSqlRawAsync(SqlLoader.CreateSchema);
             // ensure privileges for current user
-            await db.Database.ExecuteSqlRawAsync("GRANT ALL ON SCHEMA public TO public;");
+            await db.Database.ExecuteSqlRawAsync(SqlLoader.GrantSchema);
             logger.LogWarning("Schema 'public' recreated. Proceeding to migrations.");
         }
         catch (Exception ex)
@@ -232,7 +313,7 @@ using (var scope = app.Services.CreateScope())
     {
         try
         {
-            await db.Database.ExecuteSqlRawAsync("TRUNCATE \"Comments\", \"Tasks\", \"Projects\", \"Users\" RESTART IDENTITY CASCADE;");
+            await db.Database.ExecuteSqlRawAsync(SqlLoader.WipeData);
             logger.LogWarning("All data wiped due to WIPE_DB_ON_STARTUP={Wipe}. Database has been reset.", wipeEnv ?? "(default:true)");
         }
         catch (Exception ex)
@@ -265,6 +346,39 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// ========================================
+// OWASP Security Headers (A05)
+// Protects against XSS, clickjacking, MIME sniffing
+// ========================================
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    
+    // Prevent XSS attacks - only allow scripts/styles from same origin
+    // Allow Google Fonts for Material Icons (fonts.googleapis.com for CSS, fonts.gstatic.com for font files)
+    headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' wss: https:; frame-ancestors 'none';";
+    
+    // Prevent MIME type sniffing
+    headers["X-Content-Type-Options"] = "nosniff";
+    
+    // Prevent clickjacking
+    headers["X-Frame-Options"] = "DENY";
+    
+    // Control referrer information
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    
+    // Enforce HTTPS (HSTS) - 1 year
+    headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+    
+    // Disable browser features that could be abused
+    headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
+    
+    await next();
+});
+
+// Rate limiting middleware (OWASP A07)
+app.UseIpRateLimiting();
+
 app.UseSerilogRequestLogging();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
@@ -274,9 +388,40 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseHttpsRedirection();
 
-// Serve SPA static files from wwwroot (Angular build)
+// Enable response compression
+app.UseResponseCompression();
+
+// Serve SPA static files from wwwroot (Angular build) with caching
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var path = ctx.Context.Request.Path.Value ?? "";
+        var fileName = ctx.File.Name;
+        
+        // Angular hashed assets have pattern: name.hash.ext (e.g., main.99d85aae.js, styles.09df3004.css)
+        // Check for hash pattern: 8+ hex chars before the extension
+        var isHashedAsset = System.Text.RegularExpressions.Regex.IsMatch(fileName, @"\.[a-f0-9]{8,}\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var isAssetFolder = path.StartsWith("/assets/", StringComparison.OrdinalIgnoreCase);
+        
+        if (isHashedAsset || isAssetFolder)
+        {
+            // Cache hashed assets for 1 year (immutable)
+            ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+        }
+        else if (fileName.Equals("index.html", StringComparison.OrdinalIgnoreCase))
+        {
+            // index.html should not be cached long - allows app updates
+            ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+        }
+        else
+        {
+            // Other static files: cache for 1 day
+            ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=86400";
+        }
+    }
+});
 
 // Ensure routing runs before CORS so preflight OPTIONS are handled by the CORS middleware
 app.UseRouting();

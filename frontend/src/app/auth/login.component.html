@@ -1,0 +1,83 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Sign In</h1>
+      <p>Welcome back to Project Pulse</p>
+    </div>
+
+    <div class="auth-body">
+        <div class="demo-hint">
+            <strong>Demo Credentials</strong><br>
+            <span>Email: <code>admin@demo.local</code></span><br>
+            <span>Password: <code>demo123!</code></span><br>
+        </div>
+
+      <form (ngSubmit)="submit()" #loginForm="ngForm">
+        <mat-form-field appearance="fill">
+          <mat-label>Email address</mat-label>
+          <input 
+            matInput 
+            name="email" 
+            [(ngModel)]="email" 
+            type="email" 
+            required 
+            email
+            autocomplete="email"
+            #emailInput="ngModel">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="emailInput.invalid && emailInput.touched">
+            Please enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Password</mat-label>
+          <input 
+            matInput 
+            name="password" 
+            [(ngModel)]="password" 
+            [type]="hidePassword ? 'password' : 'text'" 
+            required
+            autocomplete="current-password"
+            #passwordInput="ngModel">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button 
+            type="button" 
+            mat-icon-button 
+            matSuffix 
+            (click)="hidePassword = !hidePassword"
+            [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+            class="password-toggle">
+            <mat-icon>{{hidePassword ? 'visibility' : 'visibility_off'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="passwordInput.invalid && passwordInput.touched">
+            Password is required
+          </mat-error>
+        </mat-form-field>
+
+        <div *ngIf="error" class="auth-error">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{error}}</span>
+        </div>
+
+        <button 
+          mat-flat-button 
+          color="primary" 
+          type="submit" 
+          class="auth-submit-btn"
+          [disabled]="busy || loginForm.invalid">
+          <ng-container *ngIf="busy; else notBusy">
+            <mat-spinner diameter="18"></mat-spinner>
+            <span>Signing in...</span>
+          </ng-container>
+          <ng-template #notBusy>Sign In</ng-template>
+        </button>
+      </form>
+    </div>
+
+    <div class="auth-footer">
+      <span>Don't have an account? </span>
+      <a routerLink="/auth/register">Create one</a>
+    </div>
+  </div>
+</div>

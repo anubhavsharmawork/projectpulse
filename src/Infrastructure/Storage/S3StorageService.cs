@@ -2,9 +2,11 @@ using Application.Common.Interfaces;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Infrastructure
 {
+    [ExcludeFromCodeCoverage]
     public class S3StorageService : IStorageService
     {
         private readonly IAmazonS3 _s3;
@@ -49,7 +51,6 @@ namespace Infrastructure
             };
             // Reduce retries and timeouts to avoid long H12 timeouts on bad configuration/DNS
             cfg.Timeout = TimeSpan.FromSeconds(10);
-            cfg.ReadWriteTimeout = TimeSpan.FromSeconds(10);
             cfg.MaxErrorRetry = 1;
 
             _s3 = new AmazonS3Client(cfg);

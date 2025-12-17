@@ -12,6 +12,6 @@ export class FilesService {
     const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
     const form = new FormData();
     form.append('file', file, file.name);
-    return this.http.post<{ url: string }>(`${this.baseUrl}/api/files/upload`, form, { headers });
+    return this.http.post<{ url: string }>(`${this.baseUrl}/api/v1/files/upload`, form, { headers });
   }
 }

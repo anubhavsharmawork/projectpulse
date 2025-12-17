@@ -1,0 +1,126 @@
+<h2 id="tasks-heading">Orphan Tasks</h2>
+
+<div class="info-box" role="note">
+  <strong>Note:</strong> This page shows orphan tasks (tasks not linked to a User Story). 
+  To create tasks under a User Story, go to the Work Items page and expand a User Story.
+</div>
+
+<div class="summary" 
+     *ngIf="tasks.length" 
+     role="status" 
+     aria-live="polite"
+     [attr.aria-label]="'Orphan Task Completion: ' + completedCount + ' of ' + tasks.length + ' tasks completed, ' + completionPercent + ' percent'">
+  Orphan Task Completion {{completedCount}} / {{tasks.length}} ({{completionPercent}}%)
+</div>
+
+<form (ngSubmit)="create()" class="form-inline" role="form" aria-label="Create new orphan task">
+  <label for="task-title" class="sr-only">Task title</label>
+  <input id="task-title" 
+         [(ngModel)]="title" 
+         name="title" 
+         placeholder="Task title" 
+         required
+         aria-required="true"
+         [attr.aria-describedby]="uploadError ? 'upload-error' : null">
+  <label for="task-desc" class="sr-only">Task description</label>
+  <input id="task-desc" 
+         [(ngModel)]="description" 
+         name="description" 
+         placeholder="Description"
+         aria-label="Task description (optional)">
+  <label for="task-parent" class="sr-only">Parent User Story (optional)</label>
+  <select id="task-parent"
+          [(ngModel)]="selectedParentId"
+          name="parentId"
+          aria-label="Parent User Story (optional, leave blank for orphan task)">
+    <option value="">No parent (orphan task)</option>
+    <option *ngFor="let story of userStories" [value]="story.id">{{story.title}}</option>
+  </select>
+  <ng-container *ngIf="uploadsEnabled">
+    <label for="task-attachment" class="sr-only">Task attachment</label>
+    <input type="file" 
+           id="task-attachment"
+           name="attachment" 
+           (change)="onFile($event)" 
+           accept="image/*,application/pdf,.txt,.md" 
+           aria-label="Task attachment (optional, max 40KB)">
+  </ng-container>
+  <button type="submit" 
+          [disabled]="busy"
+          [attr.aria-busy]="busy"
+          aria-label="Add new task">
+    Add
+  </button>
+</form>
+
+<ng-container *ngIf="uploadsEnabled">
+  <div class="small" *ngIf="fileName" role="status" aria-live="polite">
+    Selected: {{fileName}} ({{fileSizeDisplay}})
+  </div>
+  <div id="upload-error" 
+       class="small" 
+       *ngIf="uploadError" 
+       role="alert" 
+       aria-live="assertive" 
+       style="color:#e53935">
+    {{uploadError}}
+  </div>
+</ng-container>
+
+<ul class="task-list" 
+    role="list" 
+    aria-labelledby="tasks-heading"
+    (keydown)="onListKeydown($event)">
+  <li *ngFor="let t of tasks; let i = index" 
+      class="task" 
+      [class.completed]="t.isCompleted"
+      role="listitem"
+      [attr.tabindex]="i === 0 ? 0 : -1"
+      [attr.aria-label]="getTaskAriaLabel(t)">
+    <div class="task-head">
+      <div>
+        <span class="badge task-badge" aria-hidden="true">Task</span>
+        <span class="task-title" [id]="'task-title-' + t.id">{{t.title}}</span>
+        <div class="task-desc" *ngIf="t.description">{{t.description}}</div>
+        <div class="task-parent" *ngIf="t.parentId">
+          <small>Parent: {{t.parentId}}</small>
+        </div>
+        <div class="task-attach" *ngIf="t.attachmentUrl">
+          <a [href]="t.attachmentUrl" 
+             target="_blank" 
+             rel="noreferrer noopener"
+             [attr.aria-label]="'Download attachment for task: ' + t.title + ' (opens in new tab)'">
+            Attachment
+          </a>
+        </div>
+        <div class="task-status" 
+             *ngIf="t.isCompleted" 
+             role="status">
+          <span aria-hidden="true">&#10003;</span>
+          <span class="sr-only">Completed</span>
+          <span>
+            Completed<span *ngIf="t.completedAt"> on {{ t.completedAt | date:'medium' }}</span>
+          </span>
+        </div>
+      </div>
+      <div class="task-actions" role="group" [attr.aria-label]="'Actions for task: ' + t.title">
+        <button *ngIf="!t.isCompleted" 
+                (click)="complete(t.id)"
+                [attr.aria-describedby]="'task-title-' + t.id"
+                aria-label="Mark task as complete">
+          Complete
+        </button>
+        <button (click)="remove(t.id)"
+                [attr.aria-describedby]="'task-title-' + t.id"
+                aria-label="Delete task">
+          Delete
+        </button>
+      </div>
+    </div>
+    <app-comments [workItemId]="t.id" [attr.aria-label]="'Comments for task: ' + t.title"></app-comments>
+  </li>
+</ul>
+
+<p *ngIf="tasks.length === 0" role="status" aria-live="polite" class="small">
+  No orphan tasks. Tasks linked to User Stories appear on the Work Items page.
+</p>

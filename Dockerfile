@@ -14,7 +14,7 @@ COPY ./frontend/src ./src
 RUN npm install --no-audit --no-fund && npm run build
 
 # 2) Build .NET API
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY ./Project.sln ./
 COPY ./src/Domain/Domain.csproj ./src/Domain/
@@ -27,7 +27,7 @@ COPY . .
 RUN dotnet publish ./src/API/API.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # 3) Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 80
 

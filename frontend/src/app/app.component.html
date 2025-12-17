@@ -1,0 +1,99 @@
+<div class="scroll-progress" [style.width.%]="scrollProgress" aria-hidden="true"></div>
+<header class="site-header reveal" role="banner">
+  <nav class="topbar" role="navigation">
+    <span class="brand" 
+          (click)="goHome()" 
+          (keydown.enter)="goHome()" 
+          (keydown.space)="goHome(); $event.preventDefault()"
+          tabindex="0" 
+          role="button"
+          aria-label="Go to home - Project Pulse Management">Project Pulse Management</span>
+    <span class="spacer"></span>
+    <div class="main-nav" aria-label="Main navigation">
+      <a class="nav-btn" *ngIf="(token$ | async)" routerLink="/projects" aria-current="page">Projects</a>
+      <app-mention-notifications *ngIf="(token$ | async)"></app-mention-notifications>
+      <a class="nav-btn" *ngIf="!(token$ | async)" routerLink="/auth/login">Login</a>
+      <a class="nav-btn" *ngIf="!(token$ | async)" routerLink="/auth/register">Register</a>
+      <button class="nav-btn" *ngIf="(token$ | async)" (click)="logout()" aria-label="Logout from application">Logout</button>
+    </div>
+  </nav>
+
+  <section class="hero reveal" aria-labelledby="uvp-heading" *ngIf="!isAuthPage">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <h1 id="uvp-heading" class="uvp">Build and track projects with clarity and speed</h1>
+      <p class="tag">A minimalist, accessible project pulse demo that highlights real-time collaboration and thoughtful UX.</p>
+      <div class="cta" role="group" aria-label="Primary actions">
+        <button class="cta-btn" 
+                (click)="primaryCta()"
+                [attr.aria-label]="(token$ | async) ? 'View your projects' : 'Login to view projects'">
+          {{ (token$ | async) ? 'View Projects' : 'Login to View Projects' }}
+        </button>
+        <button class="ghost-btn" 
+                *ngIf="!(token$ | async)" 
+                (click)="loginDemo()"
+                aria-label="Try demo login with sample credentials">
+          Try Demo Login
+        </button>
+      </div>
+    </div>
+  </section>
+</header>
+
+<main id="main-content" [class]="isAuthPage ? 'auth-main' : 'container'" role="main" aria-label="Main content">
+  <router-outlet></router-outlet>
+
+  <section class="skills reveal" aria-label="Task completion progress" *ngIf="(token$ | async)">
+    <h2 class="sr-only">Task Completion Progress</h2>
+    <div class="skills-grid" role="list" aria-label="Progress by project">
+      <div class="skill" role="listitem" aria-live="polite">
+        <div class="skill-top">
+          <span class="skill-name" id="overall-progress-label">Overall Task Completion</span>
+          <span class="skill-val" aria-hidden="true">{{overall.completed}} / {{overall.total}} ({{overall.percent}}%)</span>
+        </div>
+        <div class="skill-bar" 
+             role="progressbar" 
+             [attr.aria-valuenow]="overall.percent" 
+             aria-valuemin="0" 
+             aria-valuemax="100"
+             [attr.aria-label]="'Overall progress: ' + overall.completed + ' of ' + overall.total + ' tasks completed, ' + overall.percent + ' percent'"
+             aria-labelledby="overall-progress-label">
+          <span class="skill-fill" [style.width.%]="overall.percent" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="skill" *ngFor="let p of perProject; let i = index" role="listitem" aria-live="polite">
+        <div class="skill-top">
+          <span class="skill-name" [id]="'project-progress-label-' + i">{{p.name}}</span>
+          <span class="skill-val" aria-hidden="true">{{p.completed}} / {{p.total}} ({{p.percent}}%)</span>
+        </div>
+        <div class="skill-bar" 
+             role="progressbar" 
+             [attr.aria-valuenow]="p.percent" 
+             aria-valuemin="0" 
+             aria-valuemax="100"
+             [attr.aria-label]="p.name + ' progress: ' + p.completed + ' of ' + p.total + ' tasks completed, ' + p.percent + ' percent'"
+             [attr.aria-labelledby]="'project-progress-label-' + i">
+          <span class="skill-fill" [style.width.%]="p.percent" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+    <div class="small" *ngIf="loadingStats" role="status" aria-live="polite">Calculating progress…</div>
+    <div class="small" *ngIf="statsError" role="alert" aria-live="assertive" style="color:#e53935">{{statsError}}</div>
+  </section>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="container footer-inner">
+    <div class="small">&copy; {{year}} Anubhav Sharma. All rights reserved.</div>
+    <nav class="social" aria-label="Social media links">
+      <a href="https://www.linkedin.com/in/anubhav-sharma-/" 
+         target="_blank" 
+         rel="noreferrer noopener" 
+         aria-label="Visit Anubhav Sharma's LinkedIn profile (opens in new tab)" 
+         class="ml-sm">
+        <span class="icon" aria-hidden="true">in</span>
+      </a>
+    </nav>
+  </div>
+</footer>

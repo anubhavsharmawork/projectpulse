@@ -1,47 +1,52 @@
-import { Component } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute, NavigationStart } from '@angular/router';
 import { AuthService } from './auth.service';
+import { Subscription, filter } from 'rxjs';
 
 @Component({
   selector: 'app-login',
-  template: `
-  <mat-card>
-    <h2>Login</h2>
-    <form (ngSubmit)="submit()">
-      <mat-form-field appearance="fill" style="width:100%">
-        <mat-label>Email</mat-label>
-        <input matInput name="email" [(ngModel)]="email" type="email" required />
-      </mat-form-field>
-      <mat-form-field appearance="fill" style="width:100%">
-        <mat-label>Password</mat-label>
-        <input matInput name="password" [(ngModel)]="password" type="password" required />
-      </mat-form-field>
-      <div style="display:flex;gap:.5rem;align-items:center;">
-        <button mat-flat-button color="primary" type="submit" [disabled]="busy">Login</button>
-        <a routerLink="/auth/register">Create an account</a>
-      </div>
-      <div *ngIf="error" style="color:#f44336;margin-top:.5rem">{{error}}</div>
-    </form>
-  </mat-card>
-  `
+  templateUrl: './login.component.html'
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   email = 'admin@demo.local';
   password = 'demo123!';
   busy = false;
   error = '';
+  hidePassword = true;
   private redirectUrl = '/projects';
+  private navSubscription?: Subscription;
 
   constructor(private auth: AuthService, private router: Router, private route: ActivatedRoute) {
     const q = this.route.snapshot.queryParamMap.get('redirectUrl');
     if (q) this.redirectUrl = q;
+
+    // Listen for navigation away from this component to clean up state
+    this.navSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationStart)
+    ).subscribe(() => {
+      // Reset state when navigating away
+      this.busy = false;
+    });
+  }
+
+  ngOnDestroy() {
+    this.navSubscription?.unsubscribe();
   }
 
   submit() {
-    this.busy = true; this.error = '';
+    this.busy = true;
+    this.error = '';
     this.auth.login(this.email, this.password).subscribe({
-      next: r => { this.auth.saveToken(r.token); this.router.navigateByUrl(this.redirectUrl); },
-      error: _ => { this.error = 'Invalid credentials'; this.busy = false; }
+      next: r => {
+        this.auth.saveToken(r.token);
+        // Navigate and wait for completion
+        this.router.navigateByUrl(this.redirectUrl, { replaceUrl: true }).then(() => {
+          this.busy = false;
+        }).catch(() => {
+          this.busy = false;
+        });
+      },
+      error: _ => { this.error = 'Invalid email or password. Please try again.'; this.busy = false; }
     });
   }
 }

@@ -1,102 +1,36 @@
-import { Component, Inject, HostListener, OnInit, AfterViewInit, ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Inject, HostListener, OnInit, AfterViewInit, ElementRef, OnDestroy, Injector, Type } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { API_BASE_URL } from './core/api.config';
 import { DemoAuthService } from './core/demo-auth.service';
-import { ProjectsService, ProjectDto } from './projects/projects.service';
-import { TasksService, TaskDto } from './tasks/tasks.service';
-import { NotificationsService } from './notifications/notifications.service';
-import { forkJoin } from 'rxjs';
-import { SignalRService } from './core/signalr.service';
+import { Subscription, filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
-  template: `
-  <div class="scroll-progress" [style.width.%]="scrollProgress" aria-hidden="true"></div>
-  <header class="site-header reveal" role="banner">
-    <mat-toolbar color="primary" class="topbar">
-      <span class="brand" (click)="goHome()" tabindex="0" aria-label="Go to home">
-        <img src="project.svg" class="brand-logo" alt="Project Pulse" />
-      </span>
-      <span class="spacer"></span>
-      <nav class="main-nav" aria-label="Primary">
-        <a mat-button *ngIf="(token$ | async)" routerLink="/projects">Projects</a>
-        <a mat-button *ngIf="!(token$ | async)" routerLink="/auth/login">Login</a>
-        <a mat-button *ngIf="!(token$ | async)" routerLink="/auth/register">Register</a>
-        <button mat-button *ngIf="(token$ | async)" (click)="logout()">Logout</button>
-      </nav>
-    </mat-toolbar>
-
-    <section class="hero reveal" aria-labelledby="uvp-heading">
-      <div class="hero-bg" aria-hidden="true"></div>
-      <div class="container hero-inner">
-        <h1 id="uvp-heading" class="uvp">Build and track projects with clarity and speed</h1>
-        <p class="tag">A minimalist, accessible project pulse demo that highlights real-time collaboration and thoughtful UX.</p>
-        <div class="cta">
-          <button class="cta-btn" (click)="primaryCta()">{{ (token$ | async) ? 'View Projects' : 'Login to View Projects' }}</button>
-          <button class="ghost-btn" *ngIf="!(token$ | async)" (click)="loginDemo()">Try Demo Login</button>
-        </div>
-      </div>
-    </section>
-  </header>
-
-  <main class="container" role="main">
-    <router-outlet></router-outlet>
-
-    <section class="skills reveal" aria-label="Progress" *ngIf="(token$ | async)">
-      <h2 class="sr-only">Progress</h2>
-      <div class="skills-grid">
-        <div class="skill" aria-live="polite">
-          <div class="skill-top">
-            <span class="skill-name">Overall Task Completion</span>
-            <span class="skill-val">{{overall.completed}} / {{overall.total}} ({{overall.percent}}%)</span>
-          </div>
-          <div class="skill-bar" role="progressbar" [attr.aria-valuenow]="overall.percent" aria-valuemin="0" aria-valuemax="100">
-            <span class="skill-fill" [style.width.%]="overall.percent"></span>
-          </div>
-        </div>
-
-        <div class="skill" *ngFor="let p of perProject" aria-live="polite">
-          <div class="skill-top">
-            <span class="skill-name">{{p.name}}</span>
-            <span class="skill-val">{{p.completed}} / {{p.total}} ({{p.percent}}%)</span>
-          </div>
-          <div class="skill-bar" role="progressbar" [attr.aria-valuenow]="p.percent" aria-valuemin="0" aria-valuemax="100">
-            <span class="skill-fill" [style.width.%]="p.percent"></span>
-          </div>
-        </div>
-      </div>
-      <div class="small" *ngIf="loadingStats">Calculating progress…</div>
-      <div class="small" *ngIf="statsError" style="color:#e53935">{{statsError}}</div>
-    </section>
-  </main>
-
-  <footer class="site-footer reveal" role="contentinfo">
-    <div class="container footer-inner">
-      <div class="small">&copy; {{year}} Anubhav Sharma. All rights reserved.</div>
-      <div class="social" aria-label="Social links">
-        <a href="https://www.linkedin.com/in/anubhav-sharma-/" target="_blank" rel="noreferrer" aria-label="LinkedIn" class="ml-sm">
-          <span class="icon" aria-hidden="true">in</span>
-          <span class="sr-only">LinkedIn</span>
-        </a>
-      </div>
-    </div>
-  </footer>
-  `,
+  templateUrl: './app.component.html',
   styles: [
     `.spacer{flex:1 1 auto}`
   ]
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   token$ = this.auth.tokenChanges$;
   year = new Date().getFullYear();
   scrollProgress = 0;
+  isAuthPage = false;
 
   overall = { completed: 0, total: 0, percent: 0 };
   perProject: Array<{ name: string; completed: number; total: number; percent: number }> = [];
   loadingStats = false;
   statsError = '';
   private hubConnected = false;
+  private tokenSubscription?: Subscription;
+  private routerSubscription?: Subscription;
+  private signalrService: any = null;
+  private notifyService: any = null;
+  private mentionNotificationsService: any = null;
+  
+  // Lazy loaded component
+  mentionNotificationsComponent: Type<any> | null = null;
 
   constructor(
     private http: HttpClient,
@@ -104,32 +38,99 @@ export class AppComponent implements OnInit, AfterViewInit {
     private router: Router,
     @Inject(API_BASE_URL) private baseUrl: string,
     private el: ElementRef<HTMLElement>,
-    private projects: ProjectsService,
-    private tasks: TasksService,
-    private notify: NotificationsService,
-    private signalr: SignalRService
-  ) {}
+    private injector: Injector
+  ) {
+    this.checkAuthRoute(this.router.url);
+  }
+
+  private checkAuthRoute(url: string) {
+    this.isAuthPage = url.startsWith('/auth');
+  }
+
+  /** Lazy load NotificationsService */
+  private async getNotify() {
+    if (!this.notifyService) {
+      const { NotificationsService } = await import('./notifications/notifications.service');
+      this.notifyService = this.injector.get(NotificationsService);
+    }
+    return this.notifyService;
+  }
+
+  /** Lazy load SignalRService */
+  private async getSignalR() {
+    if (!this.signalrService) {
+      const { SignalRService } = await import('./core/signalr.service');
+      this.signalrService = this.injector.get(SignalRService);
+    }
+    return this.signalrService;
+  }
+
+  /** Lazy load MentionNotificationsService */
+  private async getMentionNotifications() {
+    if (!this.mentionNotificationsService) {
+      const { MentionNotificationsService } = await import('./mentions/mention-notifications.service');
+      this.mentionNotificationsService = this.injector.get(MentionNotificationsService);
+    }
+    return this.mentionNotificationsService;
+  }
 
   ngOnInit(){
     this.updateScrollProgress();
     // When auth state changes, refresh progress and ensure SignalR is connected
-    this.token$.subscribe((tok: string | null) => {
+    this.tokenSubscription = this.token$.subscribe((tok: string | null) => {
       if (tok) {
         this.loadProgress();
-        if (!this.hubConnected) {
-          this.signalr.connect(tok).then(() => {
-            this.hubConnected = true;
-            this.signalr.onTaskUpdated((_payload: any) => this.loadProgress());
-          }).catch(() => { /* ignore */ });
-        }
+        this.loadMentionsComponent();
+        this.connectSignalR(tok);
       } else {
-        this.perProject = []; this.overall = {completed:0,total:0,percent:0};
+        this.perProject = []; 
+        this.overall = {completed:0,total:0,percent:0};
+        this.mentionNotificationsComponent = null;
+        this.disconnectSignalR();
       }
+    });
+
+    this.routerSubscription = this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe(event => {
+      this.checkAuthRoute(event.url);
     });
   }
 
+  private async connectSignalR(tok: string) {
+    if (!this.hubConnected) {
+      try {
+        const signalr = await this.getSignalR();
+        await signalr.connect(tok);
+        this.hubConnected = true;
+        signalr.onTaskUpdated((_payload: any) => this.loadProgress());
+        
+        // Handle mention notifications in real-time
+        signalr.onNotification(async (payload: any) => {
+          if (payload?.type === 'mention') {
+            const mentionSvc = await this.getMentionNotifications();
+            mentionSvc.refreshUnreadCount();
+          }
+        });
+      } catch { /* ignore */ }
+    }
+  }
+
+  private async disconnectSignalR() {
+    if (this.signalrService) {
+      this.signalrService.disconnect();
+      this.hubConnected = false;
+    }
+  }
+
+  ngOnDestroy() {
+    this.tokenSubscription?.unsubscribe();
+    this.disconnectSignalR();
+    this.routerSubscription?.unsubscribe();
+  }
+
   ngAfterViewInit(){
-    // Section reveal on scroll
+    // Section reveal on scroll - exclude above-the-fold content (header, hero)
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -139,35 +140,79 @@ export class AppComponent implements OnInit, AfterViewInit {
       });
     }, { threshold: .12 });
 
-    this.el.nativeElement.querySelectorAll('.reveal').forEach(sec => observer.observe(sec));
+    // Only observe below-the-fold reveal elements (skip header/hero for LCP)
+    this.el.nativeElement.querySelectorAll('.reveal:not(.site-header):not(.hero)').forEach((sec: Element) => observer.observe(sec));
+    
+    // Immediately show above-the-fold content
+    this.el.nativeElement.querySelectorAll('.site-header.reveal, .hero.reveal').forEach((sec: Element) => sec.classList.add('in'));
   }
 
-  loadProgress(){
-    this.loadingStats = true; this.statsError = '';
-    this.projects.getAll().subscribe({
-      next: (projs: ProjectDto[]) => {
-        if (!projs.length) { this.perProject = []; this.overall = {completed:0,total:0,percent:0}; this.loadingStats = false; return; }
-        const calls = projs.map(p => this.tasks.getAll(p.id));
-        forkJoin(calls).subscribe({
-          next: (tasksByProject: TaskDto[][]) => {
-            let total = 0, completed = 0;
-            this.perProject = projs.map((p, i) => {
-              const list = tasksByProject[i] || [];
-              const t = list.length;
-              const c = list.filter(x => x.isCompleted).length;
-              total += t; completed += c;
-              const percent = t ? Math.round((c / t) * 100) : 0;
-              return { name: p.name, completed: c, total: t, percent };
-            });
-            const overallPercent = total ? Math.round((completed / total) * 100) : 0;
-            this.overall = { completed, total, percent: overallPercent };
-            this.loadingStats = false;
-          },
-          error: _ => { this.statsError = 'Failed to load progress'; this.notify.show('Failed to load progress'); this.loadingStats = false; }
-        });
-      },
-      error: _ => { this.statsError = 'Failed to load projects'; this.notify.show('Failed to load projects'); this.loadingStats = false; }
-    });
+  /** Lazy load the MentionNotificationsComponent */
+  private async loadMentionsComponent() {
+    if (!this.mentionNotificationsComponent) {
+      const { MentionNotificationsComponent } = await import('./mentions/mention-notifications.component');
+      this.mentionNotificationsComponent = MentionNotificationsComponent;
+    }
+  }
+
+  /** Lazy load progress - only imports ProjectsService/TasksService when needed */
+  async loadProgress(){
+    this.loadingStats = true; 
+    this.statsError = '';
+    
+    try {
+      // Dynamic imports - these modules only load when user is authenticated
+      const [{ ProjectsService }, { TasksService }, { forkJoin }] = await Promise.all([
+        import('./projects/projects.service'),
+        import('./tasks/tasks.service'),
+        import('rxjs')
+      ]);
+      
+      // Get services from Angular's injector (they're providedIn: 'root')
+      const projects = this.injector.get(ProjectsService);
+      const tasks = this.injector.get(TasksService);
+      
+      projects.getAll().subscribe({
+        next: async (projs) => {
+          if (!projs.length) { 
+            this.perProject = []; 
+            this.overall = {completed:0,total:0,percent:0}; 
+            this.loadingStats = false; 
+            return; 
+          }
+          const calls = projs.map(p => tasks.getAll(p.id));
+          forkJoin(calls).subscribe({
+            next: (tasksByProject) => {
+              let total = 0, completed = 0;
+              this.perProject = projs.map((p, i) => {
+                const list = tasksByProject[i] || [];
+                const t = list.length;
+                const c = list.filter(x => x.isCompleted).length;
+                total += t; completed += c;
+                const percent = t ? Math.round((c / t) * 100) : 0;
+                return { name: p.name, completed: c, total: t, percent };
+              });
+              const overallPercent = total ? Math.round((completed / total) * 100) : 0;
+              this.overall = { completed, total, percent: overallPercent };
+              this.loadingStats = false;
+            },
+            error: async _ => { 
+              this.statsError = 'Failed to load progress'; 
+              (await this.getNotify()).show('Failed to load progress'); 
+              this.loadingStats = false; 
+            }
+          });
+        },
+        error: async _ => { 
+          this.statsError = 'Failed to load projects'; 
+          (await this.getNotify()).show('Failed to load projects'); 
+          this.loadingStats = false; 
+        }
+      });
+    } catch (e) {
+      this.statsError = 'Failed to load progress';
+      this.loadingStats = false;
+    }
   }
 
   @HostListener('window:scroll')
@@ -186,14 +231,26 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   goHome(){ this.router.navigateByUrl('/projects'); }
 
-  loginDemo() {
+  async loginDemo() {
     const body = new HttpParams()
       .set('Email', 'admin@demo.local')
       .set('Password', 'demo123!');
     const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
     this.http.post<{ token: string }>(`${this.baseUrl}/api/auth/login`, body.toString(), { headers })
-      .subscribe({ next: r => { this.auth.setToken(r.token); this.notify.show('Logged in'); }, error: _ => this.notify.show('Login failed') });
+      .subscribe({ 
+        next: async r => { 
+          this.auth.setToken(r.token); 
+          (await this.getNotify()).show('Logged in'); 
+          // Navigate to projects after demo login
+          this.router.navigateByUrl('/projects', { replaceUrl: true });
+        }, 
+        error: async _ => (await this.getNotify()).show('Login failed') 
+      });
   }
 
-  logout() { this.auth.clear(); this.router.navigateByUrl('/auth/login'); this.notify.show('Logged out'); }
+  async logout() { 
+    this.auth.clear(); 
+    this.router.navigateByUrl('/auth/login');
+    (await this.getNotify()).show('Logged out');
+  }
 }

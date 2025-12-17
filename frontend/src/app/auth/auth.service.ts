@@ -10,13 +10,13 @@ export class AuthService {
   login(email: string, password: string) {
     const body = new HttpParams().set('Email', email).set('Password', password);
     const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
-    return this.http.post<{ token: string }>(`${this.baseUrl}/api/auth/login`, body.toString(), { headers });
+    return this.http.post<{ token: string }>(`${this.baseUrl}/api/v1/auth/login`, body.toString(), { headers });
   }
 
   register(email: string, password: string, displayName: string) {
     const body = new HttpParams().set('Email', email).set('Password', password).set('DisplayName', displayName);
     const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
-    return this.http.post<{ userId: string }>(`${this.baseUrl}/api/auth/register`, body.toString(), { headers });
+    return this.http.post<{ userId: string }>(`${this.baseUrl}/api/v1/auth/register`, body.toString(), { headers });
   }
 
   saveToken(token: string) { this.auth.setToken(token); }

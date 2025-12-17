@@ -1,4 +1,4 @@
-name: CI/CD
+﻿name: CI/CD
 
 on:
   push:
@@ -14,50 +14,98 @@ jobs:
         working-directory: ./
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'
+
       - name: Restore
         run: dotnet restore Project.sln
+
       - name: Build
         run: dotnet build Project.sln --configuration Release --no-restore
-      - name: Test
-        run: dotnet test Project.sln --configuration Release --no-build || true
+
+      - name: Test with Coverage
+        run: |
+          dotnet test Project.sln \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=./coverage/
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool || true
+
+      - name: Convert Coverage to Cobertura
+        run: |
+          echo "=== Converting coverage files ==="
+          reportgenerator \
+            "-reports:./coverage/**/coverage.cobertura.xml" \
+            "-targetdir:./coverage/reports" \
+            "-reporttypes:Cobertura" || echo "ReportGenerator completed"
+          
+          echo "=== Generated report files ==="
+          ls -la ./coverage/reports/ || echo "Reports directory not created"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/reports/Cobertura.xml,./coverage/**/coverage.cobertura.xml
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Install Heroku CLI
+        if: github.ref == 'refs/heads/main'
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
       - name: Login to Heroku Container Registry
         if: github.ref == 'refs/heads/main'
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          echo $HEROKU_API_KEY | docker login --username=_ --password-stdin registry.heroku.com
+          echo "machine api.heroku.com login _ password $HEROKU_API_KEY" > ~/.netrc
+          echo "machine registry.heroku.com login _ password $HEROKU_API_KEY" >> ~/.netrc
+          chmod 600 ~/.netrc
+          heroku container:login
+
       - name: Build & Push API image
         if: github.ref == 'refs/heads/main'
         env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_BACKEND_APP: ${{ secrets.HEROKU_BACKEND_APP }}
         run: |
-          docker build -t registry.heroku.com/${HEROKU_BACKEND_APP}/web .
-          docker push registry.heroku.com/${HEROKU_BACKEND_APP}/web
+          heroku container:push web --app ${HEROKU_BACKEND_APP}
+
       - name: Release API
         if: github.ref == 'refs/heads/main'
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_BACKEND_APP: ${{ secrets.HEROKU_BACKEND_APP }}
         run: |
-          curl -n -X PATCH https://api.heroku.com/apps/${HEROKU_BACKEND_APP}/formation \
-            -d '{"updates":[{"type":"web","docker_image":"registry.heroku.com/'"${HEROKU_BACKEND_APP}"'/web"}]}' \
-            -H "Content-Type: application/json" \
-            -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
-            -H "Authorization: Bearer ${HEROKU_API_KEY}"
+          heroku container:release web --app ${HEROKU_BACKEND_APP}
 
   frontend:
     runs-on: ubuntu-latest
+    environment:
+      name: project-pulse
+      url: https://app1.anubhavsharma.dev
     steps:
       - uses: actions/checkout@v4
+
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Create source tarball (frontend root)
         run: |
           tar -czf app.tar.gz -C frontend .
+
       - name: Deploy to Heroku via Sources API
         if: github.ref == 'refs/heads/main'
         env:

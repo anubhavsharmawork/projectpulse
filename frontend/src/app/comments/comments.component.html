@@ -1,0 +1,67 @@
+<div class="comments" role="region" [attr.aria-label]="'Comments section'">
+  <h3 [id]="'comments-heading-' + workItemId">Comments</h3>
+  <form (ngSubmit)="add()" 
+        class="form-inline" 
+        role="form" 
+        aria-label="Add a comment">
+    <div class="comment-input-wrapper">
+      <label [for]="'comment-input-' + workItemId" class="sr-only">Write a comment (use @ to mention users)</label>
+      <input #commentInput
+             [id]="'comment-input-' + workItemId"
+             [(ngModel)]="body" 
+             name="body" 
+             placeholder="Write a comment... (use @ to mention)" 
+             required
+             autocomplete="off"
+             aria-required="true"
+             [attr.aria-describedby]="'comments-heading-' + workItemId"
+             [attr.aria-expanded]="showMentionDropdown"
+             [attr.aria-controls]="showMentionDropdown ? 'mention-dropdown-' + workItemId : null"
+             (input)="onInputChange($event)"
+             (keydown)="onInputKeydown($event)">
+      
+      <!-- Mention Autocomplete Dropdown -->
+      <div *ngIf="showMentionDropdown" 
+           class="mention-dropdown"
+           [id]="'mention-dropdown-' + workItemId"
+           role="listbox"
+           aria-label="Select a user to mention">
+        <div *ngFor="let user of mentionUsers; let i = index"
+             class="mention-item"
+             [class.active]="i === selectedMentionIndex"
+             role="option"
+             [attr.aria-selected]="i === selectedMentionIndex"
+             (click)="selectMention(user)"
+             (mouseenter)="selectedMentionIndex = i">
+          <span class="mention-item-name">{{user.displayName}}</span>
+          <span class="mention-item-email">{{user.email}}</span>
+        </div>
+      </div>
+    </div>
+    <button type="submit" 
+            aria-label="Add comment"
+            [disabled]="!body.trim()">
+      Add
+    </button>
+  </form>
+  <ul class="comment-list" 
+      role="list" 
+      [attr.aria-labelledby]="'comments-heading-' + workItemId"
+      (keydown)="onListKeydown($event)">
+    <li *ngFor="let c of comments; let i = index" 
+        class="comment-item"
+        role="listitem"
+        [attr.tabindex]="i === 0 ? 0 : -1"
+        [attr.aria-label]="'Comment: ' + c.body">
+      <span class="comment-text" [innerHTML]="formatCommentBody(c.body)"></span>
+      <button class="link" 
+              (click)="remove(c.id)"
+              aria-label="Delete this comment">
+        Delete
+      </button>
+    </li>
+  </ul>
+  <p *ngIf="comments.length === 0" role="status" aria-live="polite" class="small">
+    No comments yet.
+  </p>
+</div>

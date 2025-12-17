@@ -1,0 +1,27 @@
+codecov:
+  require_ci_to_pass: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...100"
+  status:
+    project:
+      default:
+        target: 85%
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+
+ignore:
+  - "tests/**/*"
+  - "src/**/Migrations/**"
+  - "src/API/Program.cs"
+  - "src/API/Controllers/OpsController.cs"
+  - "src/API/Hubs/ProjectHub.cs"
+  - "src/Infrastructure/DependencyInjection.cs"
+  - "src/Infrastructure/Storage/S3StorageService.cs"
+  - "src/Infrastructure/Persistence/AppDbSeeder.cs"
+  - "frontend/**/*"

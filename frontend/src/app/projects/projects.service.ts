@@ -16,7 +16,7 @@ export class ProjectsService {
     return { headers, withCredentials: false } as const;
   }
 
-  getAll(): Observable<ProjectDto[]> { return this.http.get<ProjectDto[]>(`${this.baseUrl}/api/projects`, this.options()); }
-  create(input: { name: string; description?: string }) { return this.http.post(`${this.baseUrl}/api/projects`, input, this.options()); }
-  delete(id: string) { return this.http.delete(`${this.baseUrl}/api/projects/${id}`, this.options()); }
+  getAll(): Observable<ProjectDto[]> { return this.http.get<ProjectDto[]>(`${this.baseUrl}/api/v1/projects`, this.options()); }
+  create(input: { name: string; description?: string }) { return this.http.post(`${this.baseUrl}/api/v1/projects`, input, this.options()); }
+  delete(id: string) { return this.http.delete(`${this.baseUrl}/api/v1/projects/${id}`, this.options()); }
 }

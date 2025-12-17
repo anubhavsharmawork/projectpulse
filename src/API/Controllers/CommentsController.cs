@@ -4,29 +4,31 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Persistence;
+using Asp.Versioning;
 
 namespace API.Controllers
 {
     [ApiController]
-    [Route("api/tasks/{taskId:guid}/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/work-items/{workItemId:guid}/[controller]")]
     [Authorize(Policy = "MemberPolicy")]
     public class CommentsController : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetAll(Guid taskId, [FromServices] AppDbContext db)
-            => Ok(await db.Comments.AsNoTracking().Where(c => c.TaskItemId == taskId).ToListAsync());
+        public async Task<IActionResult> GetAll(Guid workItemId, [FromServices] AppDbContext db)
+            => Ok(await db.Comments.AsNoTracking().Where(c => c.WorkItemId == workItemId).ToListAsync());
 
         [HttpPost]
-        public async Task<IActionResult> Create(Guid taskId, CreateCommentCommand cmd, [FromServices] IMediator mediator)
+        public async Task<IActionResult> Create(Guid workItemId, CreateCommentCommand cmd, [FromServices] IMediator mediator)
         {
-            cmd = cmd with { TaskId = taskId };
+            cmd = cmd with { WorkItemId = workItemId };
             return Ok(await mediator.Send(cmd));
         }
 
         [HttpDelete("{commentId:guid}")]
-        public async Task<IActionResult> Delete(Guid taskId, Guid commentId, [FromServices] AppDbContext db)
+        public async Task<IActionResult> Delete(Guid workItemId, Guid commentId, [FromServices] AppDbContext db)
         {
-            var e = await db.Comments.FirstOrDefaultAsync(c => c.Id == commentId && c.TaskItemId == taskId);
+            var e = await db.Comments.FirstOrDefaultAsync(c => c.Id == commentId && c.WorkItemId == workItemId);
             if (e == null) return NotFound();
             db.Remove(e);
             await db.SaveChangesAsync();

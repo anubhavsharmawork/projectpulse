@@ -1,0 +1,95 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Create Account</h1>
+      <p>Join Project Pulse</p>
+    </div>
+
+    <div class="auth-body">
+      <form (ngSubmit)="submit()" #registerForm="ngForm">
+        <mat-form-field appearance="fill">
+          <mat-label>Display name</mat-label>
+          <input 
+            matInput 
+            name="displayName" 
+            [(ngModel)]="displayName" 
+            required
+            minlength="2"
+            autocomplete="name"
+            #nameInput="ngModel">
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="nameInput.invalid && nameInput.touched">
+            Name must be at least 2 characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Email address</mat-label>
+          <input 
+            matInput 
+            name="email" 
+            [(ngModel)]="email" 
+            type="email" 
+            required
+            email
+            autocomplete="email"
+            #emailInput="ngModel">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="emailInput.invalid && emailInput.touched">
+            Please enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Password</mat-label>
+          <input 
+            matInput 
+            name="password" 
+            [(ngModel)]="password" 
+            [type]="hidePassword ? 'password' : 'text'" 
+            required
+            minlength="6"
+            autocomplete="new-password"
+            #passwordInput="ngModel">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button 
+            type="button" 
+            mat-icon-button 
+            matSuffix 
+            (click)="hidePassword = !hidePassword"
+            [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+            class="password-toggle">
+            <mat-icon>{{hidePassword ? 'visibility' : 'visibility_off'}}</mat-icon>
+          </button>
+          <!--<mat-hint>At least 6 characters</mat-hint>-->
+          <mat-error *ngIf="passwordInput.invalid && passwordInput.touched">
+            Password must be at least 6 characters
+          </mat-error>
+        </mat-form-field>
+
+        <div *ngIf="error" class="auth-error">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{error}}</span>
+        </div>
+
+        <button 
+          mat-flat-button 
+          color="primary" 
+          type="submit" 
+          class="auth-submit-btn"
+          [disabled]="busy || registerForm.invalid">
+          <ng-container *ngIf="busy">
+            <mat-spinner diameter="18"></mat-spinner>
+            <span>Creating account...</span>
+          </ng-container>
+          <span *ngIf="!busy">Create Account</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="auth-footer">
+      <span>Already have an account? </span>
+      <a routerLink="/auth/login">Sign in</a>
+    </div>
+  </div>
+</div>

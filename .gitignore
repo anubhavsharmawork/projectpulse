@@ -12,3 +12,7 @@ obj/
 # Ignore logs and temporary files
 *.log
 *.tmp
+
+# Ignore Angular build artifacts
+frontend/dist/
+frontend/.angular/
