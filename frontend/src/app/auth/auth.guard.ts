@@ -7,15 +7,15 @@ export class AuthGuard implements CanMatch, CanActivate {
   constructor(private auth: DemoAuthService, private router: Router) {}
 
   canMatch(route: Route, segments: UrlSegment[]): boolean | UrlTree {
-    const token = this.auth.getToken();
-    if (token) return true;
+    if (!this.auth.isTokenExpired()) return true;
+    this.auth.clear(); // remove stale token
     const url = '/' + segments.map(s => s.path).join('/');
     return this.router.createUrlTree(['/auth/login'], { queryParams: { redirectUrl: url } });
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
-    const token = this.auth.getToken();
-    if (token) return true;
+    if (!this.auth.isTokenExpired()) return true;
+    this.auth.clear(); // remove stale token
     return this.router.createUrlTree(['/auth/login'], { queryParams: { redirectUrl: state.url } });
   }
 }

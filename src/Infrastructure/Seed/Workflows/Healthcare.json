@@ -1,0 +1,76 @@
+{
+  "name": "Healthcare Workflow",
+  "domainType": "Healthcare",
+  "states": [
+    {
+      "name": "Proposed",
+      "order": 1,
+      "color": "#6B7280",
+      "isInitial": true,
+      "isFinal": false,
+      "allowedTransitions": ["Clinical Review"],
+      "requiredFields": [],
+      "notifyOnEntry": false
+    },
+    {
+      "name": "Clinical Review",
+      "order": 2,
+      "color": "#8B5CF6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Compliance Check", "Proposed"],
+      "requiredFields": ["PatientImpactLevel", "ClinicalRiskLevel"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Compliance Check",
+      "order": 3,
+      "color": "#F59E0B",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Pilot", "Clinical Review"],
+      "requiredFields": ["HIPAAComplianceStatus"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Pilot",
+      "order": 4,
+      "color": "#3B82F6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Implementation", "Compliance Check"],
+      "requiredFields": ["EstimatedPatientsAffected"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Implementation",
+      "order": 5,
+      "color": "#EC4899",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Monitoring"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Monitoring",
+      "order": 6,
+      "color": "#10B981",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Closed", "Implementation"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Closed",
+      "order": 7,
+      "color": "#22C55E",
+      "isInitial": false,
+      "isFinal": true,
+      "allowedTransitions": [],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    }
+  ]
+}

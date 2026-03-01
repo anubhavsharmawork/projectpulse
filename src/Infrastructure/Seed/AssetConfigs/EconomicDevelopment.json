@@ -1,0 +1,79 @@
+[
+  {
+    "assetType": "OfficeEquipment",
+    "category": "Physical",
+    "displayLabel": "Office Equipment",
+    "description": "Computers, projectors, and general office technology",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": null,
+    "sortOrder": 1
+  },
+  {
+    "assetType": "CommunityFacility",
+    "category": "Facility",
+    "displayLabel": "Community Facility",
+    "description": "Community centres, co-working spaces, incubator hubs",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 30,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "ADA/DDA accessibility compliance; annual fire-safety inspection",
+    "sortOrder": 2
+  },
+  {
+    "assetType": "GrantFundedAsset",
+    "category": "Physical",
+    "displayLabel": "Grant-Funded Asset",
+    "description": "Assets procured with government or third-party grant funding",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Retain purchase documentation for grant audit; disposal requires funder approval",
+    "sortOrder": 3
+  },
+  {
+    "assetType": "ConferenceSystem",
+    "category": "Physical",
+    "displayLabel": "Conference System",
+    "description": "Video-conferencing hardware, displays, and room systems",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": null,
+    "sortOrder": 4
+  },
+  {
+    "assetType": "PublicVehicle",
+    "category": "Vehicle",
+    "displayLabel": "Public Vehicle",
+    "description": "Agency-owned vehicles for field visits and programme delivery",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Fleet-management policy; mileage tracking; insurance coverage verification",
+    "sortOrder": 5
+  },
+  {
+    "assetType": "Furniture",
+    "category": "Physical",
+    "displayLabel": "Office Furniture",
+    "description": "Desks, chairs, filing cabinets, and storage units",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": null,
+    "sortOrder": 6
+  },
+  {
+    "assetType": "SoftwareLicense",
+    "category": "License",
+    "displayLabel": "Software License",
+    "description": "CRM, GIS, reporting, and grant-management software entitlements",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Licence-count audit; data-handling clauses in vendor agreements",
+    "sortOrder": 7
+  }
+]

@@ -22,6 +22,7 @@ namespace API.Controllers
             var query = db.WorkItems
                 .OfType<TaskWorkItem>()
                 .AsNoTracking()
+                .Include(t => t.CurrentState!)
                 .Where(t => t.ProjectId == projectId);
 
             if (orphansOnly)
@@ -40,7 +41,9 @@ namespace API.Controllers
                     t.AssigneeId,
                     t.CreatedAt,
                     t.CompletedAt,
-                    t.ParentId
+                    t.ParentId,
+                    CurrentStateName = t.CurrentState != null ? t.CurrentState.Name : null,
+                    CurrentStateColor = t.CurrentState != null ? t.CurrentState.Color : null
                 })
                 .ToListAsync());
         }

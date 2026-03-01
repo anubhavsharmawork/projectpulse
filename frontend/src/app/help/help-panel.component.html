@@ -1,0 +1,167 @@
+<!-- Help panel overlay — accessible slide-out panel (WCAG 2.1 AA) -->
+<div class="help-overlay"
+     *ngIf="isOpen"
+     (click)="close()"
+     [@fadeInOut]
+     aria-hidden="true"></div>
+
+<aside class="help-panel"
+       *ngIf="isOpen"
+       [@slideInOut]
+       role="dialog"
+       aria-modal="true"
+       [attr.aria-label]="content.panelTitle"
+       (keydown)="onPanelKeydown($event)">
+
+  <!-- Panel header -->
+  <header class="help-header">
+    <h2 id="help-panel-title" class="help-title">{{ content.panelTitle }}</h2>
+    <button class="help-close-btn"
+            (click)="close()"
+            aria-label="Close help panel"
+            #closeBtn>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Search -->
+  <div class="help-search-wrapper">
+    <label for="help-search-input" class="sr-only">Search help topics</label>
+    <svg class="help-search-icon" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+         stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input id="help-search-input"
+           type="search"
+           class="help-search-input"
+           [(ngModel)]="searchQuery"
+           (input)="onSearch()"
+           [placeholder]="content.searchPlaceholder"
+           autocomplete="off"
+           #searchInput>
+    <button class="help-search-clear"
+            *ngIf="searchQuery"
+            (click)="clearSearch()"
+            aria-label="Clear search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Main scrollable content area -->
+  <div class="help-body" role="region" aria-label="Help content">
+
+    <!-- Search results view -->
+    <ng-container *ngIf="searchQuery && searchResults.length > 0">
+      <div class="help-search-status" role="status" aria-live="polite">
+        {{ searchResults.length }} result{{ searchResults.length !== 1 ? 's' : '' }} found
+      </div>
+      <ul class="help-results-list" role="list">
+        <li *ngFor="let result of searchResults"
+            class="help-result-item"
+            role="listitem">
+          <button class="help-result-btn"
+                  (click)="openArticle(result.categoryId, result.article.id)"
+                  [attr.aria-label]="result.article.title + ' — ' + result.article.summary">
+            <span class="help-result-title">{{ result.article.title }}</span>
+            <span class="help-result-summary">{{ result.article.summary }}</span>
+          </button>
+        </li>
+      </ul>
+    </ng-container>
+
+    <!-- No results message -->
+    <div class="help-no-results" *ngIf="searchQuery && searchResults.length === 0" role="status" aria-live="polite">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+           stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"
+           stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <line x1="8" y1="11" x2="14" y2="11"/>
+      </svg>
+      <p>{{ content.noResultsMessage }}</p>
+    </div>
+
+    <!-- Article detail view -->
+    <ng-container *ngIf="!searchQuery && activeArticle">
+      <nav class="help-breadcrumb" aria-label="Help navigation">
+        <button class="help-back-btn" (click)="closeArticle()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          {{ content.backLabel }}
+        </button>
+      </nav>
+      <article class="help-article" aria-labelledby="help-article-title">
+        <h3 id="help-article-title" class="help-article-title">{{ activeArticle.title }}</h3>
+        <p class="help-article-body">{{ activeArticle.body }}</p>
+        <ol class="help-steps" *ngIf="activeArticle.steps && activeArticle.steps.length > 0" aria-label="Step-by-step instructions">
+          <li *ngFor="let step of activeArticle.steps" class="help-step">
+            <span class="help-step-number" aria-hidden="true">{{ step.order }}</span>
+            <span class="help-step-text">{{ step.text }}</span>
+          </li>
+        </ol>
+      </article>
+    </ng-container>
+
+    <!-- Category list (default view) -->
+    <ng-container *ngIf="!searchQuery && !activeArticle">
+      <nav aria-label="Help categories">
+        <ul class="help-category-list" role="list">
+          <li *ngFor="let cat of content.categories; let ci = index"
+              class="help-category"
+              role="listitem">
+            <button class="help-category-header"
+                    (click)="toggleCategory(ci)"
+                    [attr.aria-expanded]="expandedCategories[ci]"
+                    [attr.aria-controls]="'help-cat-' + cat.id">
+              <svg class="help-category-icon" width="20" height="20" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="1.75"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path [attr.d]="cat.icon"/>
+              </svg>
+              <span class="help-category-title">{{ cat.title }}</span>
+              <svg class="help-chevron" [class.open]="expandedCategories[ci]"
+                   width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <ul class="help-article-list"
+                [id]="'help-cat-' + cat.id"
+                *ngIf="expandedCategories[ci]"
+                role="list"
+                [attr.aria-label]="cat.title + ' articles'">
+              <li *ngFor="let article of cat.articles"
+                  class="help-article-item"
+                  role="listitem">
+                <button class="help-article-btn"
+                        (click)="openArticle(cat.id, article.id)"
+                        [attr.aria-label]="article.title + ' — ' + article.summary">
+                  <span class="help-article-btn-title">{{ article.title }}</span>
+                  <span class="help-article-btn-summary">{{ article.summary }}</span>
+                </button>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </ng-container>
+
+  </div>
+</aside>

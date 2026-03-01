@@ -1,0 +1,134 @@
+[
+  {
+    "assetType": "MedicalDevice",
+    "category": "MedicalEquipment",
+    "displayLabel": "Medical Device",
+    "description": "General-purpose medical device such as pulse oximeters, blood-pressure monitors",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "FDA 21 CFR Part 820 or local equivalent; calibration records mandatory",
+    "sortOrder": 1
+  },
+  {
+    "assetType": "ImagingEquipment",
+    "category": "MedicalEquipment",
+    "displayLabel": "Imaging Equipment",
+    "description": "MRI, CT, X-ray, ultrasound, and fluoroscopy machines",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Radiation safety compliance; annual physics survey; DICOM connectivity verification",
+    "sortOrder": 2
+  },
+  {
+    "assetType": "LabInstrument",
+    "category": "Instrument",
+    "displayLabel": "Laboratory Instrument",
+    "description": "Centrifuges, analysers, spectrometers, and other lab equipment",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 8,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "CLIA/CAP accreditation requirements; bi-annual calibration",
+    "sortOrder": 3
+  },
+  {
+    "assetType": "PatientMonitor",
+    "category": "MedicalEquipment",
+    "displayLabel": "Patient Monitor",
+    "description": "Bedside or telemetry patient monitoring systems",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "IEC 60601 compliance; alarm safety checks per AAMI guidelines",
+    "sortOrder": 4
+  },
+  {
+    "assetType": "Defibrillator",
+    "category": "MedicalEquipment",
+    "displayLabel": "Defibrillator",
+    "description": "AED or manual defibrillator units",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 30,
+    "complianceNotes": "Monthly self-test verification; pad and battery expiry tracking",
+    "sortOrder": 5
+  },
+  {
+    "assetType": "InfusionPump",
+    "category": "MedicalEquipment",
+    "displayLabel": "Infusion Pump",
+    "description": "IV infusion pumps and syringe drivers",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 8,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "FDA recall monitoring; drug-library updates per pharmacy protocol",
+    "sortOrder": 6
+  },
+  {
+    "assetType": "SurgicalInstrument",
+    "category": "Instrument",
+    "displayLabel": "Surgical Instrument",
+    "description": "Reusable surgical instruments and trays",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 30,
+    "complianceNotes": "Sterilisation tracking; instrument count verification per case",
+    "sortOrder": 7
+  },
+  {
+    "assetType": "HospitalBed",
+    "category": "Physical",
+    "displayLabel": "Hospital Bed",
+    "description": "Electric or manual hospital beds including bariatric models",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Infection-control cleaning protocol; weight-limit verification",
+    "sortOrder": 8
+  },
+  {
+    "assetType": "Wheelchair",
+    "category": "Physical",
+    "displayLabel": "Wheelchair",
+    "description": "Manual and powered wheelchairs for patient transport",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": null,
+    "sortOrder": 9
+  },
+  {
+    "assetType": "Ambulance",
+    "category": "Vehicle",
+    "displayLabel": "Ambulance",
+    "description": "Emergency medical transport vehicles",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Vehicle road-worthiness inspection; medical-equipment check per shift",
+    "sortOrder": 10
+  },
+  {
+    "assetType": "PharmaceuticalStorage",
+    "category": "Physical",
+    "displayLabel": "Pharmaceutical Storage Unit",
+    "description": "Refrigerators, freezers, and controlled-substance cabinets",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Temperature monitoring continuous; DEA compliance for controlled cabinets",
+    "sortOrder": 11
+  },
+  {
+    "assetType": "SoftwareLicense",
+    "category": "License",
+    "displayLabel": "Clinical Software License",
+    "description": "EHR, PACS, LIS, and other clinical software entitlements",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "HIPAA BAA required; audit access logs quarterly",
+    "sortOrder": 12
+  }
+]

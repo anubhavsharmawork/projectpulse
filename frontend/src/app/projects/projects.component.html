@@ -5,6 +5,33 @@
   </span>
 </div>
 
+<nav class="tab-filter" role="tablist" aria-label="Filter projects by visibility">
+  <button class="tab-btn" 
+          [class.active]="activeTab === 'all'" 
+          (click)="switchTab('all')"
+          role="tab" 
+          [attr.aria-selected]="activeTab === 'all'"
+          aria-controls="project-list">
+    All Projects
+  </button>
+  <button class="tab-btn" 
+          [class.active]="activeTab === 'mine'" 
+          (click)="switchTab('mine')"
+          role="tab" 
+          [attr.aria-selected]="activeTab === 'mine'"
+          aria-controls="project-list">
+    My Projects
+  </button>
+  <button class="tab-btn" 
+          [class.active]="activeTab === 'public'" 
+          (click)="switchTab('public')"
+          role="tab" 
+          [attr.aria-selected]="activeTab === 'public'"
+          aria-controls="project-list">
+    Public Projects
+  </button>
+</nav>
+
 <div class="create-form">
   <h3>Create New Project</h3>
   <form (ngSubmit)="create()" role="form" aria-label="Create new project">
@@ -27,6 +54,47 @@
                name="description" 
                placeholder="Brief description of the project">
       </div>
+      <div class="form-group" style="max-width: 200px;">
+        <label for="project-domain">Domain</label>
+        <select id="project-domain" [(ngModel)]="selectedDomain" name="domainType">
+          <option [ngValue]="null">— None —</option>
+          <option *ngFor="let d of domainTypes" [ngValue]="d.value">{{ d.label }}</option>
+        </select>
+      </div>
+      <div class="form-group" style="max-width: 160px;">
+        <label for="project-budget">Est. Budget <span class="optional-hint">($)</span></label>
+        <input id="project-budget" type="number" [(ngModel)]="estimatedCost" name="estimatedCost" placeholder="0" min="0" step="100">
+      </div>
+      <div class="form-group visibility-toggle-group">
+        <label id="visibility-label">Visibility</label>
+        <div class="visibility-toggle" role="radiogroup" aria-labelledby="visibility-label">
+          <button type="button" 
+                  class="toggle-option"
+                  [class.active]="!isPublic"
+                  (click)="isPublic = false"
+                  role="radio"
+                  [attr.aria-checked]="!isPublic">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Private
+          </button>
+          <button type="button" 
+                  class="toggle-option"
+                  [class.active]="isPublic"
+                  (click)="isPublic = true"
+                  role="radio"
+                  [attr.aria-checked]="isPublic">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            Public
+          </button>
+        </div>
+      </div>
       <button type="submit" 
               class="btn-primary"
               [disabled]="busy || !name.trim()"
@@ -46,47 +114,149 @@
   </div>
 </div>
 
-<ul class="card-list" 
+<ul id="project-list"
+    class="card-list" 
     role="list" 
     aria-labelledby="projects-heading"
     (keydown)="onListKeydown($event)"
     *ngIf="projects.length > 0">
   <li *ngFor="let p of projects; let i = index" 
       class="project-card" 
+      [class.card-public]="p.isPublic && !p.domainType"
+      [class.card-private]="!p.isPublic && !p.domainType"
+      [style.border-left]="p.domainType ? '3px solid ' + dc(p).primary : null"
       role="listitem"
       [attr.tabindex]="i === 0 ? 0 : -1"
-      [attr.aria-label]="'Project: ' + p.name + (p.description ? ', ' + p.description : '')"
+      [attr.aria-label]="'Project: ' + p.name + (p.isPublic ? ' (Public)' : ' (Private)') + (p.description ? ', ' + p.description : '')"
       #projectCard>
     <div class="card-header">
-      <div class="card-icon" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-        </svg>
+      <div class="card-header-top">
+        <div class="card-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <span class="visibility-badge" 
+              [class.badge-public]="p.isPublic" 
+              [class.badge-private]="!p.isPublic"
+              [attr.aria-label]="p.isPublic ? 'Public project' : 'Private project'">
+          <svg *ngIf="p.isPublic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <svg *ngIf="!p.isPublic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          {{p.isPublic ? 'Public' : 'Private'}}
+        </span>
       </div>
       <h3 class="card-title" [id]="'project-title-' + p.id">{{p.name}}</h3>
+      <span class="domain-badge" *ngIf="p.domainType" 
+            [attr.aria-label]="'Domain: ' + p.domainType"
+            [style.background]="dc(p).badgeBg"
+            [style.color]="dc(p).badgeText"
+            [style.border-color]="dc(p).badgeBorder">{{ p.domainType }}</span>
       <p class="card-desc" [class.empty]="!p.description">
         {{p.description || 'No description provided'}}
       </p>
+      <div class="card-workflow-status" *ngIf="p.workflowStatus" role="status"
+           [attr.aria-label]="'Workflow status: ' + p.workflowStatus">
+        <span class="status-dot" [class.status-active]="isActiveStatus(p.workflowStatus)" aria-hidden="true"></span>
+        <span>{{ p.workflowStatus }}</span>
+      </div>
+      <div class="budget-row" *ngIf="p.estimatedCost || p.actualCost">
+        <span class="budget-item">
+          <span class="budget-label">Est.</span>
+          <span class="budget-value">${{ (p.estimatedCost || 0) | number:'1.0-0' }}</span>
+        </span>
+        <span class="budget-item">
+          <span class="budget-label">Actual</span>
+          <span class="budget-value">${{ (p.actualCost || 0) | number:'1.0-0' }}</span>
+        </span>
+        <span class="budget-item" *ngIf="p.estimatedCost">
+          <span class="budget-label">Var.</span>
+          <span class="budget-value"
+                [style.color]="budgetVarianceColor(p)">
+            {{ budgetVariance(p) }}
+          </span>
+        </span>
+      </div>
     </div>
     <div class="card-body" role="group" [attr.aria-label]="'Actions for project ' + p.name">
       <button class="btn-action btn-work-items"
               (click)="openWorkItems(p.id)" 
               [attr.aria-describedby]="'project-title-' + p.id"
-              aria-label="View work items">
+              [attr.aria-label]="'View ' + domainLabel(p, 'level1')"
+              [style.background]="dc(p).badgeBg"
+              [style.color]="dc(p).badgeText"
+              [style.border-color]="dc(p).badgeBorder">
         <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
         </svg>
-        Work Items
+        {{ domainLabel(p, 'level1') }}
       </button>
       <button class="btn-action btn-tasks"
               (click)="openTasks(p.id)" 
               [attr.aria-describedby]="'project-title-' + p.id"
-              aria-label="View tasks">
+              [attr.aria-label]="'View ' + domainLabel(p, 'level3')"
+              [style.background]="dc(p).secondaryBg"
+              [style.color]="dc(p).secondaryText"
+              [style.border-color]="dc(p).secondaryBorder">
         <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 11l3 3L22 4"></path>
           <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
         </svg>
-        Tasks
+        {{ domainLabel(p, 'level3') }}
+      </button>
+      <button class="btn-action btn-board"
+              (click)="openBoard(p.id)" 
+              [attr.aria-describedby]="'project-title-' + p.id"
+              aria-label="View workflow board"
+              [style.background]="dc(p).tertiaryBg"
+              [style.color]="dc(p).tertiaryText"
+              [style.border-color]="dc(p).tertiaryBorder">
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="10" rx="1"/>
+        </svg>
+        Board
+      </button>
+      <button class="btn-action btn-bugs"
+              *ngIf="isITDomain(p)"
+              (click)="openBugs(p.id)"
+              [attr.aria-describedby]="'project-title-' + p.id"
+              aria-label="View bugs">
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Bugs
+      </button>
+      <button class="btn-action btn-team"
+              (click)="openTeam(p.id)" 
+              [attr.aria-describedby]="'project-title-' + p.id"
+              aria-label="Manage team">
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        Team
+      </button>
+      <button class="btn-action btn-assets"
+              (click)="openAssets(p.id)"
+              [attr.aria-describedby]="'project-title-' + p.id"
+              aria-label="View assets">
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+        </svg>
+        Assets
+      </button>
+      <button class="btn-action btn-action-icon"
+              (click)="openWorkflowConfig(p.id)"
+              [attr.aria-describedby]="'project-title-' + p.id"
+              aria-label="Configure workflow settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
       </button>
       <button class="btn-action btn-delete"
               (click)="remove(p.id)" 
@@ -107,5 +277,7 @@
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
     </svg>
   </div>
-  <p>No projects yet. Create your first project using the form above.</p>
+  <p *ngIf="activeTab === 'all'">No projects yet. Create your first project using the form above.</p>
+  <p *ngIf="activeTab === 'mine'">You don't have any projects yet. Create one using the form above.</p>
+  <p *ngIf="activeTab === 'public'">No public projects available.</p>
 </div>

@@ -1,0 +1,57 @@
+<div class="legal-container">
+  <div class="legal-card">
+    <div class="legal-header">
+      <h1>Welcome to ProjectPulse</h1>
+      <p>Please review and accept our Terms of Service and Privacy Policy to continue</p>
+    </div>
+
+    <div class="loading" *ngIf="loading">Loading legal documents...</div>
+
+    <div class="legal-body" *ngIf="!loading">
+      <!-- Terms of Service -->
+      <div class="doc-section" *ngIf="terms">
+        <button class="doc-toggle" (click)="toggleTerms()" type="button">
+          <span>📋 Terms of Service <span class="version-badge">v{{terms.version}}</span></span>
+          <span class="arrow" [class.open]="termsExpanded">▼</span>
+        </button>
+        <div class="doc-content" *ngIf="termsExpanded" [innerHTML]="terms.content | markdown"></div>
+      </div>
+
+      <!-- Privacy Policy -->
+      <div class="doc-section" *ngIf="privacy">
+        <button class="doc-toggle" (click)="togglePrivacy()" type="button">
+          <span>🔒 Privacy Policy <span class="version-badge">v{{privacy.version}}</span></span>
+          <span class="arrow" [class.open]="privacyExpanded">▼</span>
+        </button>
+        <div class="doc-content" *ngIf="privacyExpanded" [innerHTML]="privacy.content | markdown"></div>
+      </div>
+
+      <!-- Acceptance checkboxes -->
+      <div class="acceptance-section">
+        <div class="checkbox-row" (click)="termsAccepted = !termsAccepted">
+          <input type="checkbox" [(ngModel)]="termsAccepted" id="accept-terms"
+                 (click)="$event.stopPropagation()" />
+          <label for="accept-terms">
+            I have read and agree to the
+            <a (click)="$event.stopPropagation(); toggleTerms()">Terms of Service</a>
+          </label>
+        </div>
+
+        <div class="checkbox-row" (click)="privacyAccepted = !privacyAccepted">
+          <input type="checkbox" [(ngModel)]="privacyAccepted" id="accept-privacy"
+                 (click)="$event.stopPropagation()" />
+          <label for="accept-privacy">
+            I have read and agree to the
+            <a (click)="$event.stopPropagation(); togglePrivacy()">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button class="btn-accept" [disabled]="!canAccept" (click)="accept()">
+          {{ busy ? 'Saving...' : 'Accept & Continue' }}
+        </button>
+
+        <div class="error-msg" *ngIf="error">{{error}}</div>
+      </div>
+    </div>
+  </div>
+</div>

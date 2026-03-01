@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Auth.Commands;
+using Application.Common.Interfaces;
 using Application.Common.Security;
 using Application.UnitTests.TestHelpers;
 using Domain.Entities;
@@ -17,12 +18,16 @@ namespace Application.UnitTests.Auth
     public class RegisterUserHandlerTests
     {
         private readonly Mock<IConfiguration> _configMock;
+        private readonly Mock<ITenantService> _tenantServiceMock;
+        private static readonly Guid TestTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         private const string TestSalt = "test-salt";
 
         public RegisterUserHandlerTests()
         {
             _configMock = new Mock<IConfiguration>();
             _configMock.Setup(c => c["DEMO_SALT"]).Returns(TestSalt);
+            _tenantServiceMock = new Mock<ITenantService>();
+            _tenantServiceMock.Setup(t => t.GetCurrentTenantId()).Returns(TestTenantId);
         }
 
         [Fact]
@@ -30,7 +35,7 @@ namespace Application.UnitTests.Auth
         {
             // Arrange
             using var db = TestDbContextFactory.Create();
-            var handler = new RegisterUserHandler(db, _configMock.Object);
+            var handler = new RegisterUserHandler(db, _configMock.Object, _tenantServiceMock.Object);
             var command = new RegisterUserCommand("test@example.com", "password123", "Test User");
 
             // Act
@@ -45,6 +50,7 @@ namespace Application.UnitTests.Auth
             user!.Email.Should().Be("test@example.com");
             user.DisplayName.Should().Be("Test User");
             user.Role.Should().Be(Role.Member);
+            user.TenantId.Should().Be(TestTenantId);
         }
 
         [Fact]
@@ -52,7 +58,7 @@ namespace Application.UnitTests.Auth
         {
             // Arrange
             using var db = TestDbContextFactory.Create();
-            var handler = new RegisterUserHandler(db, _configMock.Object);
+            var handler = new RegisterUserHandler(db, _configMock.Object, _tenantServiceMock.Object);
             var password = "password123";
             var command = new RegisterUserCommand("test@example.com", password, "Test User");
 
@@ -63,7 +69,7 @@ namespace Application.UnitTests.Auth
             var user = await db.Users.SingleAsync(u => u.Id == result.UserId);
             user.PasswordHash.Should().NotBe(password);
             user.PasswordHash.Should().NotBeNullOrEmpty();
-            
+
             // Verify the password can be verified with the hasher
             SimplePasswordHasher.Verify(password, TestSalt, user.PasswordHash).Should().BeTrue();
         }
@@ -82,7 +88,7 @@ namespace Application.UnitTests.Auth
                     PasswordHash = "hash"
                 });
             });
-            var handler = new RegisterUserHandler(db, _configMock.Object);
+            var handler = new RegisterUserHandler(db, _configMock.Object, _tenantServiceMock.Object);
             var command = new RegisterUserCommand("existing@example.com", "password123", "New User");
 
             // Act
@@ -99,9 +105,9 @@ namespace Application.UnitTests.Auth
             // Arrange
             var configMock = new Mock<IConfiguration>();
             configMock.Setup(c => c["DEMO_SALT"]).Returns((string?)null);
-            
+
             using var db = TestDbContextFactory.Create();
-            var handler = new RegisterUserHandler(db, configMock.Object);
+            var handler = new RegisterUserHandler(db, configMock.Object, _tenantServiceMock.Object);
             var command = new RegisterUserCommand("test@example.com", "password123", "Test User");
 
             // Act
@@ -109,7 +115,7 @@ namespace Application.UnitTests.Auth
 
             // Assert
             result.UserId.Should().NotBe(Guid.Empty);
-            
+
             var user = await db.Users.SingleAsync(u => u.Id == result.UserId);
             // When DEMO_SALT is null, it should use "demo-salt" as fallback
             SimplePasswordHasher.Verify("password123", "demo-salt", user.PasswordHash).Should().BeTrue();
@@ -120,7 +126,7 @@ namespace Application.UnitTests.Auth
         {
             // Arrange
             using var db = TestDbContextFactory.Create();
-            var handler = new RegisterUserHandler(db, _configMock.Object);
+            var handler = new RegisterUserHandler(db, _configMock.Object, _tenantServiceMock.Object);
             var command = new RegisterUserCommand("test@example.com", "password123", "Test User");
             var beforeCreation = DateTime.UtcNow;
 
@@ -138,7 +144,7 @@ namespace Application.UnitTests.Auth
         {
             // Arrange
             using var db = TestDbContextFactory.Create();
-            var handler = new RegisterUserHandler(db, _configMock.Object);
+            var handler = new RegisterUserHandler(db, _configMock.Object, _tenantServiceMock.Object);
 
             // Act
             var result1 = await handler.Handle(new RegisterUserCommand("user1@example.com", "pass1", "User 1"), CancellationToken.None);

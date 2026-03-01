@@ -1,0 +1,105 @@
+{
+  "permissions": [
+    { "name": "Project.Create", "category": "Project", "description": "Create new projects" },
+    { "name": "Project.Edit", "category": "Project", "description": "Edit project details" },
+    { "name": "Project.Archive", "category": "Project", "description": "Archive projects" },
+    { "name": "Project.Delete", "category": "Project", "description": "Delete projects" },
+    { "name": "Project.ManageTemplates", "category": "Project", "description": "Manage project templates" },
+
+    { "name": "WorkItem.Create", "category": "WorkItem", "description": "Create work items (epics, stories, tasks)" },
+    { "name": "WorkItem.Assign", "category": "WorkItem", "description": "Assign work items to team members" },
+    { "name": "WorkItem.Transition", "category": "WorkItem", "description": "Transition work item workflow states" },
+    { "name": "WorkItem.Delete", "category": "WorkItem", "description": "Delete work items" },
+    { "name": "WorkItem.EditAssigned", "category": "WorkItem", "description": "Edit work items assigned to self" },
+    { "name": "WorkItem.Comment", "category": "WorkItem", "description": "Add comments to work items" },
+
+    { "name": "Team.AddMembers", "category": "Team", "description": "Add members to a team" },
+    { "name": "Team.RemoveMembers", "category": "Team", "description": "Remove members from a team" },
+    { "name": "Team.ChangeRoles", "category": "Team", "description": "Change team member roles" },
+    { "name": "Team.ViewCapacity", "category": "Team", "description": "View team capacity and workload" },
+    { "name": "Team.AssignWithinTeam", "category": "Team", "description": "Assign tasks within own team" },
+    { "name": "Team.ApproveTime", "category": "Team", "description": "Approve time entries for team members" },
+
+    { "name": "Reporting.AccessDashboards", "category": "Reporting", "description": "Access dashboards and reports" },
+    { "name": "Reporting.Export", "category": "Reporting", "description": "Export reports" },
+    { "name": "Reporting.ViewFinancials", "category": "Reporting", "description": "View financial data and cost reports" },
+
+    { "name": "Admin.GlobalSettings", "category": "Admin", "description": "Manage global settings" },
+    { "name": "Admin.ManageRoles", "category": "Admin", "description": "Manage roles and permissions" },
+    { "name": "Admin.Integrations", "category": "Admin", "description": "Manage integrations" },
+    { "name": "Admin.AuditTrail", "category": "Admin", "description": "View audit trail" }
+  ],
+  "roles": [
+    {
+      "name": "System Admin",
+      "systemRole": "SystemAdmin",
+      "description": "Full system access, user and template management",
+      "permissions": [
+        "Project.Create", "Project.Edit", "Project.Archive", "Project.Delete", "Project.ManageTemplates",
+        "WorkItem.Create", "WorkItem.Assign", "WorkItem.Transition", "WorkItem.Delete", "WorkItem.EditAssigned", "WorkItem.Comment",
+        "Team.AddMembers", "Team.RemoveMembers", "Team.ChangeRoles", "Team.ViewCapacity", "Team.AssignWithinTeam", "Team.ApproveTime",
+        "Reporting.AccessDashboards", "Reporting.Export", "Reporting.ViewFinancials",
+        "Admin.GlobalSettings", "Admin.ManageRoles", "Admin.Integrations", "Admin.AuditTrail"
+      ]
+    },
+    {
+      "name": "Portfolio Manager",
+      "systemRole": "PortfolioManager",
+      "description": "Cross-project view, priority management, capacity planning",
+      "permissions": [
+        "Project.Create", "Project.Edit", "Project.Archive",
+        "WorkItem.Create", "WorkItem.Assign", "WorkItem.Transition", "WorkItem.EditAssigned", "WorkItem.Comment",
+        "Team.ViewCapacity", "Team.AssignWithinTeam",
+        "Reporting.AccessDashboards", "Reporting.Export", "Reporting.ViewFinancials"
+      ]
+    },
+    {
+      "name": "Project Manager",
+      "systemRole": "ProjectManager",
+      "description": "CRUD epics/stories, assign tasks, manage workflows, reporting",
+      "permissions": [
+        "Project.Edit",
+        "WorkItem.Create", "WorkItem.Assign", "WorkItem.Transition", "WorkItem.Delete", "WorkItem.EditAssigned", "WorkItem.Comment",
+        "Team.AddMembers", "Team.RemoveMembers", "Team.ChangeRoles", "Team.ViewCapacity", "Team.AssignWithinTeam", "Team.ApproveTime",
+        "Reporting.AccessDashboards", "Reporting.Export", "Reporting.ViewFinancials"
+      ]
+    },
+    {
+      "name": "Team Lead",
+      "systemRole": "TeamLead",
+      "description": "Assign within team, approve time, manage team capacity",
+      "permissions": [
+        "WorkItem.Create", "WorkItem.Transition", "WorkItem.EditAssigned", "WorkItem.Comment",
+        "Team.ViewCapacity", "Team.AssignWithinTeam", "Team.ApproveTime",
+        "Reporting.AccessDashboards"
+      ]
+    },
+    {
+      "name": "Member",
+      "systemRole": "Member",
+      "description": "Edit assigned tasks, log time, update status, comment",
+      "permissions": [
+        "WorkItem.EditAssigned", "WorkItem.Transition", "WorkItem.Comment",
+        "Reporting.AccessDashboards"
+      ]
+    },
+    {
+      "name": "Viewer",
+      "systemRole": "Viewer",
+      "description": "Read-only dashboards and reports, can comment",
+      "permissions": [
+        "WorkItem.Comment",
+        "Reporting.AccessDashboards"
+      ]
+    },
+    {
+      "name": "External Consultant",
+      "systemRole": "ExternalConsultant",
+      "description": "Configurable per project, limited edit",
+      "permissions": [
+        "WorkItem.EditAssigned", "WorkItem.Comment",
+        "Reporting.AccessDashboards"
+      ]
+    }
+  ]
+}

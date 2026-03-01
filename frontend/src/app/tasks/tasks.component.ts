@@ -1,12 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, Inject, LOCALE_ID } from '@angular/core';
+import { formatDate } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { TasksService, TaskDto } from './tasks.service';
 import { WorkItemsService, WorkItemDto } from '../work-items/work-items.service';
+import { ProjectsService } from '../projects/projects.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { FilesService } from '../files/files.service';
 import { SignalRService } from '../core/signalr.service';
 import { DemoAuthService } from '../core/demo-auth.service';
 import { AccessibilityService } from '../core/accessibility.service';
+import { WorkflowService } from '../core/services/workflow.service';
+import { DomainColorService, DomainColorScheme } from '../core/services/domain-color.service';
 
 @Component({
   selector: 'app-tasks',
@@ -42,6 +46,15 @@ export class TasksComponent {
   // Toggle to re-enable uploads later
   uploadsEnabled = false;
 
+  // Domain-aware labels (defaults to generic terminology)
+  labelLevel2 = 'User Story';
+  labelLevel3 = 'Task';
+  labelLevel2Plural = 'User Stories';
+  labelLevel3Plural = 'Tasks';
+  domainType = '';
+  stateRequiredFieldsMap: { [stateName: string]: string[] } = {};
+  colors: DomainColorScheme;
+
   tasks: TaskDto[] = [];
   userStories: WorkItemDto[] = [];
   completedCount = 0;
@@ -50,14 +63,20 @@ export class TasksComponent {
   constructor(
     private svc: TasksService,
     private workItemsSvc: WorkItemsService,
+    private projectsSvc: ProjectsService,
+    private workflowSvc: WorkflowService,
     route: ActivatedRoute, 
     private notify: NotificationsService, 
     private files: FilesService, 
     private signalr: SignalRService, 
     private auth: DemoAuthService,
-    private a11y: AccessibilityService
+    private a11y: AccessibilityService,
+    private domainColorsSvc: DomainColorService,
+    @Inject(LOCALE_ID) private locale: string
   ) {
+    this.colors = this.domainColorsSvc.getColors();
     this.projectId = route.snapshot.paramMap.get('projectId') || '';
+    this.loadConfig();
     this.load();
     this.loadUserStories();
     
@@ -67,8 +86,54 @@ export class TasksComponent {
     this.signalr.onTaskUpdated((payload: any) => {
       if (!payload || payload.ProjectId !== this.projectId) return;
       this.load();
-      this.a11y.announce('Task list updated');
+      this.a11y.announce(`${this.labelLevel3} list updated`);
     });
+  }
+
+  private pluralize(label: string): string {
+    if (label.endsWith('y') && !label.endsWith('ey')) return label.slice(0, -1) + 'ies';
+    if (label.endsWith('s') || label.endsWith('x') || label.endsWith('sh') || label.endsWith('ch')) return label + 'es';
+    return label + 's';
+  }
+
+  loadConfig() {
+    this.projectsSvc.getConfig(this.projectId).subscribe({
+      next: cfg => {
+        this.domainType = cfg.domainType || '';
+        this.colors = this.domainColorsSvc.getColors(this.domainType);
+        this.domainType = cfg.domainType || this.domainType;
+        const labels = cfg.workItemTypeLabels;
+        if (labels) {
+          this.labelLevel2 = labels['2'] || this.labelLevel2;
+          this.labelLevel3 = labels['3'] || this.labelLevel3;
+          this.labelLevel2Plural = this.pluralize(this.labelLevel2);
+          this.labelLevel3Plural = this.pluralize(this.labelLevel3);
+        }
+        this.loadStateRequiredFields();
+      },
+      error: () => { /* keep defaults */ }
+    });
+  }
+
+  private loadStateRequiredFields() {
+    if (!this.domainType) {
+      this.stateRequiredFieldsMap = {};
+      return;
+    }
+    this.workflowSvc.getByDomain(this.domainType).subscribe({
+      next: wf => {
+        this.stateRequiredFieldsMap = {};
+        wf.states?.forEach(state => {
+          this.stateRequiredFieldsMap[state.name] = state.requiredFields || [];
+        });
+      },
+      error: () => { this.stateRequiredFieldsMap = {}; }
+    });
+  }
+
+  requiredFieldsForState(stateName?: string): string[] {
+    if (!stateName) return [];
+    return this.stateRequiredFieldsMap[stateName] || [];
   }
 
   private updateSummary() {
@@ -79,11 +144,11 @@ export class TasksComponent {
    * Generate accessible label for task item
    */
   getTaskAriaLabel(task: TaskDto): string {
-    let label = `Task: ${task.title}`;
+    let label = `${this.labelLevel3}: ${task.title}`;
     if (task.isCompleted) {
       label += ', completed';
       if (task.completedAt) {
-        label += ` on ${new Date(task.completedAt).toLocaleDateString()}`;
+        label += ` on ${formatDate(new Date(task.completedAt), 'mediumDate', this.locale)}`;
       }
     } else {
       label += ', pending';
@@ -96,7 +161,7 @@ export class TasksComponent {
       this.tasks = r; 
       this.updateSummary();
       if (r.length > 0) {
-        this.a11y.announce(`Loaded ${r.length} orphan task${r.length > 1 ? 's' : ''}, ${this.completedCount} completed`);
+        this.a11y.announce(`Loaded ${r.length} orphan ${r.length > 1 ? this.labelLevel3Plural.toLowerCase() : this.labelLevel3.toLowerCase()}, ${this.completedCount} completed`);
       }
     });
   }
@@ -133,8 +198,8 @@ export class TasksComponent {
       this.fileSizeDisplay=''; 
       this.busy = false; 
       this.load(); 
-      this.notify.show('Task created');
-      this.a11y.announce('Task created successfully');
+      this.notify.show(`${this.labelLevel3} created`);
+      this.a11y.announce(`${this.labelLevel3} created successfully`);
     };
     const fail = (msg: string) => { 
       this.busy = false; 
@@ -149,46 +214,46 @@ export class TasksComponent {
       this.files.upload(this.file).subscribe({
         next: r => {
           this.svc.create(this.projectId, { title: this.title, description: this.description, attachmentUrl: r.url, parentId })
-            .subscribe({ next: _ => success(), error: _ => fail('Failed to create task') });
+            .subscribe({ next: _ => success(), error: _ => fail(`Failed to create ${this.labelLevel3.toLowerCase()}`) });
         },
         error: err => { this.uploadError = err?.error?.error || 'Upload failed'; fail(this.uploadError); }
       });
     } else {
       this.svc.create(this.projectId, { title: this.title, description: this.description, parentId })
-        .subscribe({ next: _ => success(), error: _ => fail('Failed to create task') });
+        .subscribe({ next: _ => success(), error: _ => fail(`Failed to create ${this.labelLevel3.toLowerCase()}`) });
     }
   }
 
   complete(id: string) {
     const task = this.tasks.find(t => t.id === id);
-    const taskName = task?.title || 'Task';
-    
+    const taskName = task?.title || this.labelLevel3;
+
     this.svc.complete(this.projectId, id).subscribe({
       next: _ => { 
         this.load(); 
-        this.notify.show('Task completed');
+        this.notify.show(`${this.labelLevel3} completed`);
         this.a11y.announce(`${taskName} marked as complete`);
       },
       error: _ => { 
-        this.notify.show('Failed to complete task');
-        this.a11y.announce('Failed to complete task', 'assertive');
+        this.notify.show(`Failed to complete ${this.labelLevel3.toLowerCase()}`);
+        this.a11y.announce(`Failed to complete ${this.labelLevel3.toLowerCase()}`, 'assertive');
       }
     });
   }
 
   remove(id: string) {
     const task = this.tasks.find(t => t.id === id);
-    const taskName = task?.title || 'Task';
-    
+    const taskName = task?.title || this.labelLevel3;
+
     this.svc.delete(this.projectId, id).subscribe({
       next: _ => { 
         this.load(); 
-        this.notify.show('Task deleted');
+        this.notify.show(`${this.labelLevel3} deleted`);
         this.a11y.announce(`${taskName} deleted`);
       },
       error: _ => { 
-        this.notify.show('Failed to delete task');
-        this.a11y.announce('Failed to delete task', 'assertive');
+        this.notify.show(`Failed to delete ${this.labelLevel3.toLowerCase()}`);
+        this.a11y.announce(`Failed to delete ${this.labelLevel3.toLowerCase()}`, 'assertive');
       }
     });
   }

@@ -18,6 +18,16 @@ namespace Infrastructure
 
         public string GenerateToken(Guid userId, string email, string role)
         {
+            return GenerateToken(userId, Guid.Empty, email, role, null, null);
+        }
+
+        public string GenerateToken(Guid userId, string email, string role, string? systemRole, IEnumerable<string>? permissions)
+        {
+            return GenerateToken(userId, Guid.Empty, email, role, systemRole, permissions, false);
+        }
+
+        public string GenerateToken(Guid userId, Guid tenantId, string email, string role, string? systemRole, IEnumerable<string>? permissions, bool isDemo = false)
+        {
             var issuer = _config["JWT:Issuer"]; // may be null in demo
             var audience = _config["JWT:Audience"]; // may be null in demo
             var key = _config["JWT:Key"];
@@ -33,6 +43,29 @@ namespace Infrastructure
                 new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(ClaimTypes.Role, role)
             };
+
+            if (tenantId != Guid.Empty)
+            {
+                claims.Add(new Claim("tenant_id", tenantId.ToString()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(systemRole))
+            {
+                claims.Add(new Claim("system_role", systemRole));
+            }
+
+            if (permissions is not null)
+            {
+                foreach (var perm in permissions)
+                {
+                    claims.Add(new Claim("permission", perm));
+                }
+            }
+
+            if (isDemo)
+            {
+                claims.Add(new Claim("is_demo", "true"));
+            }
 
             var token = new JwtSecurityToken(issuer, audience, claims, expires: DateTime.UtcNow.AddHours(8), signingCredentials: creds);
             return new JwtSecurityTokenHandler().WriteToken(token);

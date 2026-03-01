@@ -1,0 +1,44 @@
+{
+  "domainType": "Healthcare",
+  "categories": [
+    {
+      "name": "Access Improvement",
+      "description": "Improving healthcare access for communities",
+      "defaultTeamRoles": [
+        { "role": "Healthcare Manager", "description": "Oversees access improvement initiatives" },
+        { "role": "Outreach Coordinator", "description": "Manages community outreach programs" },
+        { "role": "Community Health Worker", "description": "Frontline health service delivery" },
+        { "role": "Data Analyst", "description": "Tracks access metrics and outcomes" }
+      ]
+    },
+    {
+      "name": "Quality Enhancement",
+      "description": "Enhancing quality of care and patient outcomes",
+      "defaultTeamRoles": [
+        { "role": "QA Officer", "description": "Quality assurance and standards compliance" },
+        { "role": "Training Coordinator", "description": "Staff training and development programs" },
+        { "role": "Clinical Advisor", "description": "Clinical guidance and best practices" },
+        { "role": "Compliance Officer", "description": "Regulatory compliance oversight" }
+      ]
+    },
+    {
+      "name": "Digital Health",
+      "description": "Digital transformation of health services",
+      "defaultTeamRoles": [
+        { "role": "Product Owner", "description": "Defines digital health product vision" },
+        { "role": "Health IT Specialist", "description": "Health information systems expertise" },
+        { "role": "UX Designer", "description": "User experience for healthcare applications" },
+        { "role": "Integration Developer", "description": "System integration and interoperability" }
+      ]
+    },
+    {
+      "name": "Regulatory Compliance",
+      "description": "Meeting healthcare regulatory requirements",
+      "defaultTeamRoles": [
+        { "role": "Compliance Manager", "description": "Manages compliance programs" },
+        { "role": "Legal Advisor", "description": "Legal counsel on healthcare regulations" },
+        { "role": "Audit Specialist", "description": "Conducts compliance audits" }
+      ]
+    }
+  ]
+}

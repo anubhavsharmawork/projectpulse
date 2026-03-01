@@ -1,0 +1,29 @@
+<div class="tenant-settings">
+      <h3>Tenant Settings</h3>
+      <div class="setting-card" *ngIf="tenant">
+        <div class="setting-row">
+          <label>Organization Name</label>
+          <input [(ngModel)]="editName" class="setting-input" placeholder="Organization name" />
+        </div>
+        <div class="setting-row readonly">
+          <label>Subdomain</label>
+          <span class="readonly-value">{{ tenant.subdomain }}.projectpulse.com</span>
+        </div>
+        <div class="setting-row readonly">
+          <label>Tier</label>
+          <span class="tier-badge" [class]="'tier-' + tenant.tier.toLowerCase()">{{ tenant.tier }}</span>
+        </div>
+        <div class="setting-row readonly">
+          <label>Created</label>
+          <span class="readonly-value">{{ tenant.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="setting-actions">
+          <button class="save-btn" (click)="save()" [disabled]="saving">
+            {{ saving ? 'Saving...' : 'Save Changes' }}
+          </button>
+          <span class="save-msg" *ngIf="saved">✓ Saved</span>
+        </div>
+      </div>
+      <div *ngIf="!tenant && !loading" class="empty-state">Unable to load tenant settings.</div>
+      <div *ngIf="loading" class="loading">Loading settings...</div>
+    </div>

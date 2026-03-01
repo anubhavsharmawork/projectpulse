@@ -1,0 +1,75 @@
+<div class="tenant-usage">
+      <h3>Usage &amp; Limits</h3>
+      <div *ngIf="usage" class="usage-grid">
+        <div class="usage-card">
+          <div class="usage-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span class="usage-label">Users</span>
+          </div>
+          <div class="usage-value" *ngIf="!usage.users.unlimited">
+            {{ usage.users.current }} of {{ usage.users.max }}
+          </div>
+          <div class="usage-value" *ngIf="usage.users.unlimited">
+            {{ usage.users.current }} <span class="unlimited-tag">Unlimited</span>
+          </div>
+          <div class="usage-bar" *ngIf="!usage.users.unlimited">
+            <div class="usage-fill" [style.width.%]="usersPercent" [class.warning]="usersPercent >= 80" [class.danger]="usersPercent >= 95"></div>
+          </div>
+          <div class="usage-percent" *ngIf="!usage.users.unlimited" [class.warning-text]="usersPercent >= 80">
+            {{ usersPercent }}% used
+          </div>
+        </div>
+
+        <div class="usage-card">
+          <div class="usage-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="usage-label">Projects</span>
+          </div>
+          <div class="usage-value" *ngIf="!usage.projects.unlimited">
+            {{ usage.projects.current }} of {{ usage.projects.max }}
+          </div>
+          <div class="usage-value" *ngIf="usage.projects.unlimited">
+            {{ usage.projects.current }} <span class="unlimited-tag">Unlimited</span>
+          </div>
+          <div class="usage-bar" *ngIf="!usage.projects.unlimited">
+            <div class="usage-fill" [style.width.%]="projectsPercent" [class.warning]="projectsPercent >= 80" [class.danger]="projectsPercent >= 95"></div>
+          </div>
+          <div class="usage-percent" *ngIf="!usage.projects.unlimited" [class.warning-text]="projectsPercent >= 80">
+            {{ projectsPercent }}% used
+          </div>
+        </div>
+
+        <div class="usage-card">
+          <div class="usage-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            <span class="usage-label">Storage</span>
+          </div>
+          <div class="usage-value" *ngIf="!usage.storage.unlimited">
+            {{ formatBytes(usage.storage.currentBytes) }} of {{ formatBytes(usage.storage.maxBytes) }}
+          </div>
+          <div class="usage-value" *ngIf="usage.storage.unlimited">
+            {{ formatBytes(usage.storage.currentBytes) }} <span class="unlimited-tag">Unlimited</span>
+          </div>
+          <div class="usage-bar" *ngIf="!usage.storage.unlimited">
+            <div class="usage-fill" [style.width.%]="storagePercent" [class.warning]="storagePercent >= 80" [class.danger]="storagePercent >= 95"></div>
+          </div>
+          <div class="usage-percent" *ngIf="!usage.storage.unlimited" [class.warning-text]="storagePercent >= 80">
+            {{ storagePercent }}% used
+          </div>
+        </div>
+      </div>
+
+      <div class="upgrade-cta" *ngIf="usage && showUpgradeCta">
+        <p>Need more capacity? Upgrade your plan for higher limits.</p>
+        <button class="upgrade-btn">Contact Sales</button>
+      </div>
+
+      <div *ngIf="!usage && !loading" class="empty-state">Unable to load usage data.</div>
+      <div *ngIf="loading" class="loading">Loading usage...</div>
+    </div>

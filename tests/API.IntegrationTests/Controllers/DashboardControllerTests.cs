@@ -9,6 +9,8 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers
 {
+    // NOTE: Integration tests — exclude with: dotnet test --filter "Category!=Integration"
+    [Trait("Category", "Integration")]
     public class DashboardControllerTests : IClassFixture<TestWebApplicationFactory>
     {
         private readonly TestWebApplicationFactory _factory;
@@ -31,14 +33,14 @@ namespace API.IntegrationTests.Controllers
         }
 
         [Fact]
-        public async Task GetMetrics_WithMemberAuth_ShouldReturnForbidden()
+        public async Task GetMetrics_WithMemberAuth_ShouldReturnOk()
         {
             var client = _factory.CreateClient();
             var token = await TestHelpers.GetAuthTokenAsync(client, $"dashboard_member_{Guid.NewGuid()}@test.com");
             TestHelpers.SetAuthToken(client, token);
 
             var response = await client.GetAsync("/api/v1/dashboard/metrics");
-            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
         [Fact]

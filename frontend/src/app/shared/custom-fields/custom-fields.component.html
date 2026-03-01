@@ -1,0 +1,130 @@
+<div class="custom-fields-loading" *ngIf="loading">Loading fields…</div>
+    <div class="custom-fields-error" *ngIf="loadError && !loading" role="alert">{{ loadError }}</div>
+    <div class="custom-fields" *ngIf="!loading && fields.length > 0">
+      <div class="cf-row" *ngFor="let f of fields">
+        <span class="cf-label">{{ f.fieldName }}</span>
+        <span class="cf-type" aria-hidden="true">[{{ f.fieldType }}]</span>
+        <ng-container [ngSwitch]="editing === f.customFieldId">
+          <span class="cf-value" *ngSwitchCase="false"
+                (click)="startEdit(f)"
+                (keydown.enter)="startEdit(f)"
+                tabindex="0"
+                role="button"
+                [attr.aria-label]="f.fieldName + ': ' + (f.value || 'not set') + '. Click to edit.'">
+            {{ formatDisplay(f) }}
+          </span>
+          <span class="cf-edit" *ngSwitchCase="true">
+
+            <!-- Boolean toggle -->
+            <ng-container *ngIf="isBooleanType(f.fieldType)">
+              <label class="cf-toggle">
+                <input type="checkbox"
+                       [checked]="editValue === 'true'"
+                       (change)="editValue = $any($event.target).checked ? 'true' : 'false'"
+                       [attr.aria-label]="'Toggle ' + f.fieldName" />
+                <span class="cf-toggle-label">{{ editValue === 'true' ? 'Yes' : 'No' }}</span>
+              </label>
+            </ng-container>
+
+            <!-- MultiSelect checkboxes -->
+            <ng-container *ngIf="isMultiSelectType(f.fieldType)">
+              <span class="cf-multi-select">
+                <label *ngFor="let opt of getOptions(f)" class="cf-multi-option">
+                  <input type="checkbox"
+                         [checked]="isMultiSelected(opt)"
+                         (change)="toggleMultiSelect(opt, $any($event.target).checked)"
+                         [attr.aria-label]="opt" />
+                  {{ opt }}
+                </label>
+              </span>
+            </ng-container>
+
+            <!-- Dropdown for single-select fields with options -->
+            <select *ngIf="isDropdownType(f.fieldType) && getOptions(f).length > 0"
+                    class="cf-input"
+                    [(ngModel)]="editValue"
+                    [attr.aria-label]="'Edit ' + f.fieldName"
+                    [class.cf-input-error]="editError">
+              <option value="">— Select —</option>
+              <option *ngFor="let opt of getOptions(f)" [value]="opt">{{ opt }}</option>
+            </select>
+
+            <!-- Fallback text input for dropdown with no options loaded -->
+            <input *ngIf="isDropdownType(f.fieldType) && getOptions(f).length === 0"
+                   class="cf-input"
+                   type="text"
+                   [(ngModel)]="editValue"
+                   (keydown.enter)="saveEdit(f)"
+                   (keydown.escape)="cancelEdit()"
+                   [placeholder]="'Enter ' + f.fieldName"
+                   [attr.aria-label]="'Edit ' + f.fieldName"
+                   [attr.aria-invalid]="editError ? 'true' : null"
+                   [class.cf-input-error]="editError" />
+
+            <!-- Currency input -->
+            <span *ngIf="isCurrencyType(f.fieldType)" class="cf-currency-wrap">
+              <span class="cf-currency-symbol">$</span>
+              <input class="cf-input cf-input-currency"
+                     type="number"
+                     step="0.01"
+                     [(ngModel)]="editValue"
+                     (keydown.enter)="saveEdit(f)"
+                     (keydown.escape)="cancelEdit()"
+                     [attr.aria-label]="'Edit ' + f.fieldName + ' in dollars'"
+                     [attr.aria-invalid]="editError ? 'true' : null"
+                     [class.cf-input-error]="editError" />
+            </span>
+
+            <!-- Number input -->
+            <input *ngIf="isPlainNumberType(f.fieldType)"
+                   class="cf-input"
+                   type="number"
+                   [(ngModel)]="editValue"
+                   (keydown.enter)="saveEdit(f)"
+                   (keydown.escape)="cancelEdit()"
+                   [attr.aria-label]="'Edit ' + f.fieldName"
+                   [attr.aria-invalid]="editError ? 'true' : null"
+                   [class.cf-input-error]="editError" />
+
+            <!-- Date input -->
+            <input *ngIf="isDateType(f.fieldType)"
+                   class="cf-input"
+                   type="date"
+                   [(ngModel)]="editValue"
+                   (keydown.enter)="saveEdit(f)"
+                   (keydown.escape)="cancelEdit()"
+                   [attr.aria-label]="'Edit ' + f.fieldName"
+                   [attr.aria-invalid]="editError ? 'true' : null"
+                   [class.cf-input-error]="editError" />
+
+            <!-- RichText / textarea -->
+            <textarea *ngIf="isRichTextType(f.fieldType)"
+                      class="cf-input cf-textarea"
+                      [(ngModel)]="editValue"
+                      (keydown.escape)="cancelEdit()"
+                      [attr.aria-label]="'Edit ' + f.fieldName"
+                      [attr.aria-invalid]="editError ? 'true' : null"
+                      [class.cf-input-error]="editError"
+                      rows="3"></textarea>
+
+            <!-- Default text input (Text and unknown types, excluding types handled above) -->
+            <input *ngIf="isPlainTextType(f.fieldType)"
+                   class="cf-input"
+                   type="text"
+                   [(ngModel)]="editValue"
+                   (keydown.enter)="saveEdit(f)"
+                   (keydown.escape)="cancelEdit()"
+                   [attr.aria-label]="'Edit ' + f.fieldName"
+                   [attr.aria-invalid]="editError ? 'true' : null"
+                   [class.cf-input-error]="editError" />
+
+            <button class="cf-save" (click)="saveEdit(f)" aria-label="Save">&#10003;</button>
+            <button class="cf-cancel" (click)="cancelEdit()" aria-label="Cancel">&#10005;</button>
+          </span>
+        </ng-container>
+        <span class="cf-required" *ngIf="f.isRequired" aria-label="Required field">*</span>
+        <span class="cf-error" *ngIf="editing === f.customFieldId && editError" role="alert" aria-live="assertive">
+          {{ editError }}
+        </span>
+      </div>
+    </div>

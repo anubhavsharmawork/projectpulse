@@ -8,25 +8,26 @@
     <div class="auth-body">
         <div class="demo-hint">
             <strong>Demo Credentials</strong><br>
-            <span>Email: <code>admin@demo.local</code></span><br>
+            <span>Email: <code>demo@demo.local</code></span><br>
             <span>Password: <code>demo123!</code></span><br>
+            <span class="demo-hint-note">You can also sign in with your username</span>
         </div>
 
       <form (ngSubmit)="submit()" #loginForm="ngForm">
         <mat-form-field appearance="fill">
-          <mat-label>Email address</mat-label>
+          <mat-label>Email or Username</mat-label>
           <input 
             matInput 
-            name="email" 
-            [(ngModel)]="email" 
-            type="email" 
+            name="emailOrUsername" 
+            [(ngModel)]="emailOrUsername" 
+            type="text" 
             required 
-            email
-            autocomplete="email"
-            #emailInput="ngModel">
-          <mat-icon matPrefix>email</mat-icon>
-          <mat-error *ngIf="emailInput.invalid && emailInput.touched">
-            Please enter a valid email
+            minlength="2"
+            autocomplete="username"
+            #identityInput="ngModel">
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="identityInput.invalid && identityInput.touched">
+            Please enter your email or username
           </mat-error>
         </mat-form-field>
 

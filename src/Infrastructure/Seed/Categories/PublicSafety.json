@@ -1,0 +1,33 @@
+{
+  "domainType": "PublicSafety",
+  "categories": [
+    {
+      "name": "Emergency Services",
+      "description": "Emergency response and service improvements",
+      "defaultTeamRoles": [
+        { "role": "Emergency Services Manager", "description": "Oversees emergency service operations" },
+        { "role": "Training Officer", "description": "Emergency response training programs" },
+        { "role": "Community Liaison", "description": "Community engagement and communication" },
+        { "role": "Dispatch Coordinator", "description": "Dispatch operations and optimization" }
+      ]
+    },
+    {
+      "name": "Crime Prevention",
+      "description": "Crime prevention and community safety programs",
+      "defaultTeamRoles": [
+        { "role": "Public Safety Director", "description": "Strategic direction for safety programs" },
+        { "role": "Crime Analyst", "description": "Crime data analysis and trend identification" },
+        { "role": "Tech Specialist", "description": "Technology solutions for public safety" }
+      ]
+    },
+    {
+      "name": "Disaster Preparedness",
+      "description": "Disaster readiness and response planning",
+      "defaultTeamRoles": [
+        { "role": "Emergency Coordinator", "description": "Coordinates disaster response plans" },
+        { "role": "Logistics Officer", "description": "Resource and logistics management" },
+        { "role": "Comms Specialist", "description": "Emergency communications and public alerts" }
+      ]
+    }
+  ]
+}

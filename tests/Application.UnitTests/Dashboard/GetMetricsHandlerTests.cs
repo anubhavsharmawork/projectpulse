@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Dashboard.Queries;
+using Application.UnitTests.TestHelpers;
 using FluentAssertions;
 using Xunit;
 
@@ -11,10 +12,11 @@ namespace Application.UnitTests.Dashboard
     public class GetMetricsHandlerTests
     {
         [Fact]
-        public async Task Handle_ShouldReturnTemplateMetrics()
+        public async Task Handle_EmptyDb_ShouldReturnZeroCommonKpis()
         {
             // Arrange
-            var handler = new GetMetricsHandler();
+            using var db = TestDbContextFactory.Create();
+            var handler = new GetMetricsHandler(db);
             var query = new GetMetricsQuery();
 
             // Act
@@ -22,25 +24,28 @@ namespace Application.UnitTests.Dashboard
 
             // Assert
             result.Should().NotBeNull();
-            result.TasksTotal.Should().Be(0);
-            result.TasksCompleted.Should().Be(0);
-            result.TasksPerUser.Should().NotBeNull();
-            result.TasksPerUser.Should().BeEmpty();
+            result.Common.Should().NotBeNull();
+            result.Common.TotalTasks.Should().Be(0);
+            result.Common.CompletedTasks.Should().Be(0);
+            result.Common.CompletionRate.Should().Be(0);
+            result.Common.OverdueItems.Should().Be(0);
+            result.Common.TasksPerUser.Should().BeEmpty();
         }
 
         [Fact]
         public async Task Handle_MultipleCalls_ShouldReturnConsistentResults()
         {
             // Arrange
-            var handler = new GetMetricsHandler();
+            using var db = TestDbContextFactory.Create();
+            var handler = new GetMetricsHandler(db);
 
             // Act
             var result1 = await handler.Handle(new GetMetricsQuery(), CancellationToken.None);
             var result2 = await handler.Handle(new GetMetricsQuery(), CancellationToken.None);
 
             // Assert
-            result1.TasksTotal.Should().Be(result2.TasksTotal);
-            result1.TasksCompleted.Should().Be(result2.TasksCompleted);
+            result1.Common.TotalTasks.Should().Be(result2.Common.TotalTasks);
+            result1.Common.CompletedTasks.Should().Be(result2.Common.CompletedTasks);
         }
 
         [Fact]
@@ -55,34 +60,54 @@ namespace Application.UnitTests.Dashboard
         }
 
         [Fact]
-        public void GetMetricsResult_RecordEquality_ShouldWork()
+        public async Task Handle_WithDomainType_ShouldReturnDomainSpecificKpis()
         {
             // Arrange
-            var dict1 = new Dictionary<Guid, int>();
-            var dict2 = new Dictionary<Guid, int>();
-            var result1 = new GetMetricsResult(10, 5, dict1);
-            var result2 = new GetMetricsResult(10, 5, dict2);
+            using var db = TestDbContextFactory.Create();
+            var handler = new GetMetricsHandler(db);
 
-            // Assert - Dictionary references differ, but values are same
-            result1.TasksTotal.Should().Be(result2.TasksTotal);
-            result1.TasksCompleted.Should().Be(result2.TasksCompleted);
+            // Act
+            var result = await handler.Handle(
+                new GetMetricsQuery(global::Domain.Enums.DomainType.IT), CancellationToken.None);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IT.Should().NotBeNull();
+            result.IT!.VelocityTrend.Should().HaveCount(4);
         }
 
         [Fact]
-        public void GetMetricsResult_ShouldExposeAllProperties()
+        public async Task Handle_HealthcareDomain_ShouldReturnHealthcareKpis()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var tasksPerUser = new Dictionary<Guid, int> { { userId, 5 } };
-            
+            using var db = TestDbContextFactory.Create();
+            var handler = new GetMetricsHandler(db);
+
             // Act
-            var result = new GetMetricsResult(100, 50, tasksPerUser);
+            var result = await handler.Handle(
+                new GetMetricsQuery(global::Domain.Enums.DomainType.Healthcare), CancellationToken.None);
 
             // Assert
-            result.TasksTotal.Should().Be(100);
-            result.TasksCompleted.Should().Be(50);
-            result.TasksPerUser.Should().ContainKey(userId);
-            result.TasksPerUser[userId].Should().Be(5);
+            result.Should().NotBeNull();
+            result.Healthcare.Should().NotBeNull();
+            result.Healthcare!.ComplianceStatus.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task Handle_NoDomainType_ShouldReturnAllDomainKpis()
+        {
+            // Arrange
+            using var db = TestDbContextFactory.Create();
+            var handler = new GetMetricsHandler(db);
+
+            // Act
+            var result = await handler.Handle(new GetMetricsQuery(), CancellationToken.None);
+
+            // Assert
+            result.IT.Should().NotBeNull();
+            result.Healthcare.Should().NotBeNull();
+            result.Construction.Should().NotBeNull();
+            result.Infrastructure.Should().NotBeNull();
         }
     }
 }

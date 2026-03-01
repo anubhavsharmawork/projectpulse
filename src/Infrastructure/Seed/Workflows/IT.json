@@ -1,0 +1,106 @@
+{
+  "name": "IT/Agile Workflow",
+  "domainType": "IT",
+  "states": [
+    {
+      "name": "Backlog",
+      "order": 1,
+      "color": "#6B7280",
+      "isInitial": true,
+      "isFinal": false,
+      "allowedTransitions": ["Refinement", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": false
+    },
+    {
+      "name": "Refinement",
+      "order": 2,
+      "color": "#8B5CF6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Ready", "Backlog", "Blocked"],
+      "requiredFields": ["AcceptanceCriteria"],
+      "notifyOnEntry": false
+    },
+    {
+      "name": "Ready",
+      "order": 3,
+      "color": "#3B82F6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["In Progress", "Backlog", "Blocked"],
+      "requiredFields": ["StoryPoints"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "In Progress",
+      "order": 4,
+      "color": "#F59E0B",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Code Review", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Code Review",
+      "order": 5,
+      "color": "#EC4899",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Testing", "In Progress", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Testing",
+      "order": 6,
+      "color": "#10B981",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["UAT", "In Progress", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "UAT",
+      "order": 7,
+      "color": "#06B6D4",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Done", "In Progress", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Done",
+      "order": 8,
+      "color": "#22C55E",
+      "isInitial": false,
+      "isFinal": true,
+      "allowedTransitions": ["Deployed"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Blocked",
+      "order": 9,
+      "color": "#EF4444",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Backlog", "Refinement", "Ready", "In Progress", "Code Review", "Testing", "UAT"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Deployed",
+      "order": 10,
+      "color": "#059669",
+      "isInitial": false,
+      "isFinal": true,
+      "allowedTransitions": [],
+      "requiredFields": ["DeploymentEnvironment", "ReleaseVersion"],
+      "notifyOnEntry": true
+    }
+  ]
+}

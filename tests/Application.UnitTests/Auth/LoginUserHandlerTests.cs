@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Auth.Commands;
@@ -26,7 +27,7 @@ namespace Application.UnitTests.Auth
             _configMock.Setup(c => c["DEMO_SALT"]).Returns(TestSalt);
 
             _jwtMock = new Mock<IJwtTokenService>();
-            _jwtMock.Setup(j => j.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+            _jwtMock.Setup(j => j.GenerateToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<IEnumerable<string>?>(), It.IsAny<bool>()))
                 .Returns(TestToken);
         }
 
@@ -86,7 +87,7 @@ namespace Application.UnitTests.Auth
             await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            _jwtMock.Verify(j => j.GenerateToken(userId, "test@example.com", "Admin"), Times.Once);
+            _jwtMock.Verify(j => j.GenerateToken(userId, It.IsAny<Guid>(), "test@example.com", "Admin", It.IsAny<string?>(), It.IsAny<IEnumerable<string>?>(), It.IsAny<bool>()), Times.Once);
         }
 
         [Fact]
@@ -198,7 +199,7 @@ namespace Application.UnitTests.Auth
             await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            _jwtMock.Verify(j => j.GenerateToken(userId, "test@example.com", expectedRoleString), Times.Once);
+            _jwtMock.Verify(j => j.GenerateToken(userId, It.IsAny<Guid>(), "test@example.com", expectedRoleString, It.IsAny<string?>(), It.IsAny<IEnumerable<string>?>(), It.IsAny<bool>()), Times.Once);
         }
     }
 }

@@ -8,12 +8,32 @@ coverage:
   status:
     project:
       default:
+        target: 90%
+        threshold: 2%
+      backend:
         target: 85%
-        threshold: 1%
+        threshold: 2%
+        flags:
+          - backend
+      frontend:
+        target: 90%
+        threshold: 2%
+        flags:
+          - frontend
     patch:
       default:
-        target: 80%
-        threshold: 1%
+        target: 85%
+        threshold: 2%
+
+flags:
+  backend:
+    paths:
+      - src/
+    carryforward: true
+  frontend:
+    paths:
+      - frontend/src/
+    carryforward: true
 
 ignore:
   - "tests/**/*"
@@ -24,4 +44,6 @@ ignore:
   - "src/Infrastructure/DependencyInjection.cs"
   - "src/Infrastructure/Storage/S3StorageService.cs"
   - "src/Infrastructure/Persistence/AppDbSeeder.cs"
-  - "frontend/**/*"
+  - "frontend/src/main.ts"
+  - "frontend/src/polyfills.ts"
+  - "frontend/src/test.ts"

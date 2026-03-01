@@ -5,6 +5,8 @@ using Xunit;
 
 namespace API.IntegrationTests
 {
+    // NOTE: Integration tests — exclude with: dotnet test --filter "Category!=Integration"
+    [Trait("Category", "Integration")]
     public class SmokeTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;

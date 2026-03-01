@@ -1,0 +1,28 @@
+<div class="workflow-widget" *ngIf="currentStateName">
+      <div class="current-state">
+        <span class="state-dot" [style.background]="stateColor || '#94a3b8'" aria-hidden="true"></span>
+        <span class="state-name">{{ currentStateName }}</span>
+      </div>
+      <div class="transition-controls" *ngIf="transitions.length > 0">
+        <div class="transition-group" *ngFor="let t of transitions">
+          <button class="transition-btn"
+                  (click)="doTransition(t)"
+                  [disabled]="busy"
+                  [attr.aria-label]="transitionAriaLabel(t)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            {{ t.stateName }}
+            <span class="required-indicator" *ngIf="t.requiredFields && t.requiredFields.length > 0" aria-hidden="true">&#9679;</span>
+          </button>
+        </div>
+      </div>
+      <button class="load-transitions-btn" *ngIf="transitions.length === 0 && !loaded"
+              (click)="loadTransitions()" [disabled]="loading"
+              aria-label="Show available state transitions">
+        {{ loading ? 'Loading...' : 'Transitions' }}
+      </button>
+      <div class="transition-error" *ngIf="transitionError" role="alert" aria-live="assertive">
+        {{ transitionError }}
+      </div>
+    </div>

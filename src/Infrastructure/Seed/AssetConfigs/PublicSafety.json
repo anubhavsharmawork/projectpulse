@@ -1,0 +1,112 @@
+[
+  {
+    "assetType": "PatrolVehicle",
+    "category": "Vehicle",
+    "displayLabel": "Patrol Vehicle",
+    "description": "Marked or unmarked law-enforcement patrol cars",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Fleet inspection per local agency policy; dash-cam data retention compliance",
+    "sortOrder": 1
+  },
+  {
+    "assetType": "BodyCamera",
+    "category": "Physical",
+    "displayLabel": "Body-Worn Camera",
+    "description": "Officer body cameras for evidence capture",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 4,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Data retention per jurisdiction FOI/FOIA policy; chain-of-custody logging",
+    "sortOrder": 2
+  },
+  {
+    "assetType": "Radio",
+    "category": "Physical",
+    "displayLabel": "Two-Way Radio",
+    "description": "Portable and mobile radio communications equipment",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "FCC or local spectrum licence compliance; encryption enabled",
+    "sortOrder": 3
+  },
+  {
+    "assetType": "Firearm",
+    "category": "SafetyGear",
+    "displayLabel": "Firearm",
+    "description": "Service weapons including handguns, rifles, and shotguns",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 15,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Serial-number audit annually; armoury log per draw/return; qualification records",
+    "sortOrder": 4
+  },
+  {
+    "assetType": "ProtectiveGear",
+    "category": "SafetyGear",
+    "displayLabel": "Protective Gear",
+    "description": "Body armour, ballistic helmets, shields, and riot gear",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Ballistic rating certification; replace per manufacturer expiry date",
+    "sortOrder": 5
+  },
+  {
+    "assetType": "TacticalEquipment",
+    "category": "Physical",
+    "displayLabel": "Tactical Equipment",
+    "description": "Night-vision, breaching tools, less-lethal launchers",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "ITAR-controlled items tracked separately where applicable",
+    "sortOrder": 6
+  },
+  {
+    "assetType": "ForensicKit",
+    "category": "Instrument",
+    "displayLabel": "Forensic Kit",
+    "description": "Crime-scene evidence collection and analysis kits",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Chain-of-custody seals; expiry tracking on reagents",
+    "sortOrder": 7
+  },
+  {
+    "assetType": "EmergencyVehicle",
+    "category": "Vehicle",
+    "displayLabel": "Emergency Vehicle",
+    "description": "Fire engines, rescue trucks, command vehicles",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "NFPA 1911 annual pump test; aerial device inspection",
+    "sortOrder": 8
+  },
+  {
+    "assetType": "Drone",
+    "category": "Physical",
+    "displayLabel": "Drone / UAS",
+    "description": "Unmanned aerial systems for surveillance, search-and-rescue, or mapping",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "FAA Part 107 or local RPAS regulations; flight-log retention",
+    "sortOrder": 9
+  },
+  {
+    "assetType": "SurveillanceSystem",
+    "category": "Physical",
+    "displayLabel": "Surveillance System",
+    "description": "CCTV cameras, ANPR systems, and monitoring stations",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Privacy-impact assessment required; data retention per local policy",
+    "sortOrder": 10
+  }
+]

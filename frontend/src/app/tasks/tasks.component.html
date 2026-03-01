@@ -1,54 +1,54 @@
-<h2 id="tasks-heading">Orphan Tasks</h2>
+<h2 id="tasks-heading">Orphan {{ labelLevel3Plural }}</h2>
 
 <div class="info-box" role="note">
-  <strong>Note:</strong> This page shows orphan tasks (tasks not linked to a User Story). 
-  To create tasks under a User Story, go to the Work Items page and expand a User Story.
+  <strong>Note:</strong> This page shows orphan {{ labelLevel3Plural | lowercase }} ({{ labelLevel3Plural | lowercase }} not linked to a {{ labelLevel2 }}). 
+  To create {{ labelLevel3Plural | lowercase }} under a {{ labelLevel2 }}, go to the Work Items page and expand a {{ labelLevel2 }}.
 </div>
 
 <div class="summary" 
      *ngIf="tasks.length" 
      role="status" 
      aria-live="polite"
-     [attr.aria-label]="'Orphan Task Completion: ' + completedCount + ' of ' + tasks.length + ' tasks completed, ' + completionPercent + ' percent'">
-  Orphan Task Completion {{completedCount}} / {{tasks.length}} ({{completionPercent}}%)
+     [attr.aria-label]="'Orphan ' + labelLevel3 + ' Completion: ' + completedCount + ' of ' + tasks.length + ' ' + labelLevel3Plural.toLowerCase() + ' completed, ' + completionPercent + ' percent'">
+  Orphan {{ labelLevel3 }} Completion {{completedCount}} / {{tasks.length}} ({{completionPercent}}%)
 </div>
 
-<form (ngSubmit)="create()" class="form-inline" role="form" aria-label="Create new orphan task">
-  <label for="task-title" class="sr-only">Task title</label>
+<form (ngSubmit)="create()" class="form-inline" role="form" [attr.aria-label]="'Create new orphan ' + labelLevel3">
+  <label for="task-title" class="sr-only">{{ labelLevel3 }} title</label>
   <input id="task-title" 
          [(ngModel)]="title" 
          name="title" 
-         placeholder="Task title" 
+         [placeholder]="labelLevel3 + ' title'" 
          required
          aria-required="true"
          [attr.aria-describedby]="uploadError ? 'upload-error' : null">
-  <label for="task-desc" class="sr-only">Task description</label>
+  <label for="task-desc" class="sr-only">{{ labelLevel3 }} description</label>
   <input id="task-desc" 
          [(ngModel)]="description" 
          name="description" 
          placeholder="Description"
-         aria-label="Task description (optional)">
-  <label for="task-parent" class="sr-only">Parent User Story (optional)</label>
+         [attr.aria-label]="labelLevel3 + ' description (optional)'">
+  <label for="task-parent" class="sr-only">Parent {{ labelLevel2 }} (optional)</label>
   <select id="task-parent"
           [(ngModel)]="selectedParentId"
           name="parentId"
-          aria-label="Parent User Story (optional, leave blank for orphan task)">
-    <option value="">No parent (orphan task)</option>
+          [attr.aria-label]="'Parent ' + labelLevel2 + ' (optional, leave blank for orphan ' + labelLevel3.toLowerCase() + ')'">
+    <option value="">No parent (orphan {{ labelLevel3 | lowercase }})</option>
     <option *ngFor="let story of userStories" [value]="story.id">{{story.title}}</option>
   </select>
   <ng-container *ngIf="uploadsEnabled">
-    <label for="task-attachment" class="sr-only">Task attachment</label>
+    <label for="task-attachment" class="sr-only">{{ labelLevel3 }} attachment</label>
     <input type="file" 
            id="task-attachment"
            name="attachment" 
            (change)="onFile($event)" 
            accept="image/*,application/pdf,.txt,.md" 
-           aria-label="Task attachment (optional, max 40KB)">
+           [attr.aria-label]="labelLevel3 + ' attachment (optional, max 40KB)'">
   </ng-container>
   <button type="submit" 
           [disabled]="busy"
           [attr.aria-busy]="busy"
-          aria-label="Add new task">
+          [attr.aria-label]="'Add new ' + labelLevel3">
     Add
   </button>
 </form>
@@ -74,12 +74,15 @@
   <li *ngFor="let t of tasks; let i = index" 
       class="task" 
       [class.completed]="t.isCompleted"
+      [style.border-left-color]="colors.level3Border"
       role="listitem"
       [attr.tabindex]="i === 0 ? 0 : -1"
       [attr.aria-label]="getTaskAriaLabel(t)">
     <div class="task-head">
       <div>
-        <span class="badge task-badge" aria-hidden="true">Task</span>
+        <span class="badge task-badge" aria-hidden="true"
+              [style.background]="colors.tertiaryBg"
+              [style.color]="colors.tertiaryText">{{ labelLevel3 }}</span>
         <span class="task-title" [id]="'task-title-' + t.id">{{t.title}}</span>
         <div class="task-desc" *ngIf="t.description">{{t.description}}</div>
         <div class="task-parent" *ngIf="t.parentId">
@@ -102,25 +105,26 @@
             Completed<span *ngIf="t.completedAt"> on {{ t.completedAt | date:'medium' }}</span>
           </span>
         </div>
+        <app-custom-fields [entityId]="t.id" [domainType]="domainType" [requiredFields]="requiredFieldsForState(t.currentStateName)"></app-custom-fields>
       </div>
-      <div class="task-actions" role="group" [attr.aria-label]="'Actions for task: ' + t.title">
+      <div class="task-actions" role="group" [attr.aria-label]="'Actions for ' + labelLevel3.toLowerCase() + ': ' + t.title">
         <button *ngIf="!t.isCompleted" 
                 (click)="complete(t.id)"
                 [attr.aria-describedby]="'task-title-' + t.id"
-                aria-label="Mark task as complete">
+                [attr.aria-label]="'Mark ' + labelLevel3.toLowerCase() + ' as complete'">
           Complete
         </button>
         <button (click)="remove(t.id)"
                 [attr.aria-describedby]="'task-title-' + t.id"
-                aria-label="Delete task">
+                [attr.aria-label]="'Delete ' + labelLevel3.toLowerCase()">
           Delete
         </button>
       </div>
     </div>
-    <app-comments [workItemId]="t.id" [attr.aria-label]="'Comments for task: ' + t.title"></app-comments>
+    <app-comments [workItemId]="t.id" [attr.aria-label]="'Comments for ' + labelLevel3.toLowerCase() + ': ' + t.title"></app-comments>
   </li>
 </ul>
 
 <p *ngIf="tasks.length === 0" role="status" aria-live="polite" class="small">
-  No orphan tasks. Tasks linked to User Stories appear on the Work Items page.
+  No orphan {{ labelLevel3Plural | lowercase }}. {{ labelLevel3Plural }} linked to {{ labelLevel2Plural }} appear on the Work Items page.
 </p>

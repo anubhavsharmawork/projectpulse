@@ -1,0 +1,76 @@
+{
+  "name": "Economic Development Workflow",
+  "domainType": "EconomicDevelopment",
+  "states": [
+    {
+      "name": "Ideation",
+      "order": 1,
+      "color": "#6B7280",
+      "isInitial": true,
+      "isFinal": false,
+      "allowedTransitions": ["Proposal"],
+      "requiredFields": ["TargetIndustry"],
+      "notifyOnEntry": false
+    },
+    {
+      "name": "Proposal",
+      "order": 2,
+      "color": "#8B5CF6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Approval", "Ideation"],
+      "requiredFields": ["BusinessType", "JobsProjected"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Approval",
+      "order": 3,
+      "color": "#3B82F6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Funding", "Proposal"],
+      "requiredFields": ["InvestmentAmount"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Funding",
+      "order": 4,
+      "color": "#F59E0B",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Execution", "Approval"],
+      "requiredFields": ["GrantAmount"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Execution",
+      "order": 5,
+      "color": "#EC4899",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Measurement"],
+      "requiredFields": ["PartnershipStatus"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Measurement",
+      "order": 6,
+      "color": "#10B981",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Reporting", "Execution"],
+      "requiredFields": ["JobsActual"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Reporting",
+      "order": 7,
+      "color": "#22C55E",
+      "isInitial": false,
+      "isFinal": true,
+      "allowedTransitions": [],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    }
+  ]
+}

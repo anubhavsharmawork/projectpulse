@@ -1,0 +1,32 @@
+{
+  "domainType": "EconomicDevelopment",
+  "categories": [
+    {
+      "name": "Business Support",
+      "description": "Programs to support local businesses",
+      "defaultTeamRoles": [
+        { "role": "Economic Dev Officer", "description": "Leads economic development initiatives" },
+        { "role": "Business Analyst", "description": "Business case analysis and reporting" },
+        { "role": "Grant Writer", "description": "Grant applications and funding proposals" }
+      ]
+    },
+    {
+      "name": "Trade Promotion",
+      "description": "Trade and investment promotion programs",
+      "defaultTeamRoles": [
+        { "role": "Trade Specialist", "description": "International trade and export support" },
+        { "role": "Marketing Coordinator", "description": "Investment marketing campaigns" },
+        { "role": "Investment Analyst", "description": "Investment opportunity analysis" }
+      ]
+    },
+    {
+      "name": "Workforce Development",
+      "description": "Workforce training and development programs",
+      "defaultTeamRoles": [
+        { "role": "Program Manager", "description": "Manages workforce development programs" },
+        { "role": "Training Specialist", "description": "Designs and delivers training programs" },
+        { "role": "Employer Relations Coordinator", "description": "Employer partnerships and placement" }
+      ]
+    }
+  ]
+}

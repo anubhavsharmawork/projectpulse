@@ -1,30 +1,42 @@
 <div class="page-header">
-  <h2 id="work-items-heading">Work Items</h2>
-  <p>Manage your epics, user stories, and tasks</p>
+  <div class="page-header-row">
+    <h2 id="work-items-heading">Work Items</h2>
+    <span class="domain-badge" *ngIf="domainType" [attr.aria-label]="'Domain: ' + domainType"
+          [style.background]="colors.badgeBg"
+          [style.color]="colors.badgeText"
+          [style.border-color]="colors.badgeBorder">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      {{ domainType }}
+    </span>
+  </div>
+  <p>Manage your {{ labelLevel1Plural | lowercase }}, {{ labelLevel2Plural | lowercase }}, and {{ labelLevel3Plural | lowercase }}</p>
 </div>
 
 <!-- Epics Section -->
 <section class="section" aria-labelledby="epics-heading">
-  <h3 id="epics-heading">Epics</h3>
-  <form (ngSubmit)="createEpic()" class="form-inline" role="form" aria-label="Create new epic">
-    <label for="epic-title" class="sr-only">Epic title</label>
+  <h3 id="epics-heading">{{ labelLevel1Plural }}</h3>
+  <form (ngSubmit)="createEpic()" class="form-inline" role="form" [attr.aria-label]="'Create new ' + labelLevel1">
+    <label for="epic-title" class="sr-only">{{ labelLevel1 }} title</label>
     <input id="epic-title"
            [(ngModel)]="epicTitle" 
            name="epicTitle" 
-           placeholder="Epic title" 
+           [placeholder]="labelLevel1 + ' title'" 
            required
            aria-required="true">
-    <label for="epic-desc" class="sr-only">Epic description</label>
+    <label for="epic-desc" class="sr-only">{{ labelLevel1 }} description</label>
     <input id="epic-desc"
            [(ngModel)]="epicDescription" 
            name="epicDescription" 
            placeholder="Description"
-           aria-label="Epic description (optional)">
+           [attr.aria-label]="labelLevel1 + ' description (optional)'">
     <button type="submit" 
             [disabled]="busy"
             [attr.aria-busy]="busy"
-            aria-label="Add new epic">
-      Add Epic
+            [attr.aria-label]="'Add new ' + labelLevel1">
+      Add {{ labelLevel1 }}
     </button>
   </form>
   
@@ -34,31 +46,67 @@
       (keydown)="onTreeKeydown($event, 'epic')">
     <li *ngFor="let epic of epics; let i = index" 
         class="work-item epic"
+        [style.border-left-color]="colors.level1Border"
         role="treeitem"
         [attr.aria-expanded]="expandedEpics[epic.id] || false"
-        [attr.aria-label]="'Epic: ' + epic.title + (epic.description ? ', ' + epic.description : '')"
+        [attr.aria-label]="labelLevel1 + ': ' + epic.title + (epic.description ? ', ' + epic.description : '')"
         [attr.tabindex]="i === 0 ? 0 : -1"
         [attr.aria-level]="1"
         [attr.aria-setsize]="epics.length"
         [attr.aria-posinset]="i + 1">
       <div class="work-item-head">
         <div>
-          <span class="badge epic-badge" aria-hidden="true">Epic</span>
+          <span class="badge epic-badge" aria-hidden="true"
+                [style.background]="colors.badgeBg"
+                [style.color]="colors.badgeText">{{ labelLevel1 }}</span>
           <span class="work-item-title" [id]="'epic-title-' + epic.id">{{epic.title}}</span>
           <div class="work-item-desc" *ngIf="epic.description">{{epic.description}}</div>
+          <div class="work-item-state" *ngIf="availableStates.length > 0">
+            <button class="state-badge state-clickable"
+                    (click)="toggleStateEditor(epic.id); $event.stopPropagation()"
+                    [attr.aria-label]="'Current state: ' + (workItemStates[epic.id] || 'Not Set') + '. Click to change state'"
+                    [attr.aria-expanded]="editingStateFor === epic.id">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ workItemStates[epic.id] || 'Not Set' }}
+            </button>
+            <div class="state-dropdown" *ngIf="editingStateFor === epic.id">
+              <button *ngFor="let state of availableStates"
+                      class="state-option"
+                      [class.active]="workItemStates[epic.id] === state.name"
+                      (click)="changeWorkItemState(epic.id, state); $event.stopPropagation()"
+                      [attr.aria-label]="'Set state to ' + state.name">
+                {{ state.name }}
+              </button>
+            </div>
+          </div>
+          <app-workflow-state [workItemId]="epic.id"
+                              [currentStateName]="epic.currentStateName || ''"
+                              [stateColor]="epic.currentStateColor || ''"
+                              (transitioned)="load()"></app-workflow-state>
+          <app-custom-fields [entityId]="epic.id" [domainType]="domainType" entityType="1" [requiredFields]="requiredFieldsForState(epic.currentStateName)"></app-custom-fields>
         </div>
         <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for epic: ' + epic.title">
-          <button (click)="toggleExpand(epic.id)"
+          <button class="btn-icon"
+                  (click)="toggleExpand(epic.id)"
                   [attr.aria-expanded]="expandedEpics[epic.id] || false"
                   [attr.aria-controls]="'epic-children-' + epic.id"
-                  [attr.aria-label]="(expandedEpics[epic.id] ? 'Collapse' : 'Expand') + ' user stories for ' + epic.title">
-            {{expandedEpics[epic.id] ? 'Collapse' : 'Expand'}}
-
+                  [attr.aria-label]="(expandedEpics[epic.id] ? 'Collapse' : 'Expand') + ' ' + labelLevel2Plural + ' for ' + epic.title"
+                  [title]="expandedEpics[epic.id] ? 'Collapse' : 'Expand'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline *ngIf="!expandedEpics[epic.id]" points="6 9 12 15 18 9"></polyline>
+              <polyline *ngIf="expandedEpics[epic.id]" points="18 15 12 9 6 15"></polyline>
+            </svg>
           </button>
-          <button (click)="deleteWorkItem(epic.id)"
+          <button class="btn-icon btn-icon-danger"
+                  (click)="deleteWorkItem(epic.id)"
                   [attr.aria-describedby]="'epic-title-' + epic.id"
-                  aria-label="Delete epic">
-            Delete
+                  [attr.aria-label]="'Delete ' + labelLevel1"
+                  title="Delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+            </svg>
           </button>
         </div>
       </div>
@@ -68,21 +116,21 @@
            class="children"
            [id]="'epic-children-' + epic.id"
            role="group"
-           [attr.aria-label]="'User stories under ' + epic.title">
-        <h4 id="stories-heading-{{epic.id}}">User Stories</h4>
-        <form (ngSubmit)="createUserStory(epic.id)" class="form-inline" role="form" [attr.aria-label]="'Create user story under ' + epic.title">
-          <label [for]="'story-title-' + epic.id" class="sr-only">User Story title</label>
+           [attr.aria-label]="labelLevel2Plural + ' under ' + epic.title">
+        <h4 id="stories-heading-{{epic.id}}">{{ labelLevel2Plural }}</h4>
+        <form (ngSubmit)="createUserStory(epic.id)" class="form-inline" role="form" [attr.aria-label]="'Create ' + labelLevel2 + ' under ' + epic.title">
+          <label [for]="'story-title-' + epic.id" class="sr-only">{{ labelLevel2 }} title</label>
           <input [id]="'story-title-' + epic.id"
                  [(ngModel)]="storyTitles[epic.id]" 
                  [name]="'storyTitle-' + epic.id" 
-                 placeholder="User Story title" 
+                 [placeholder]="labelLevel2 + ' title'" 
                  required
                  aria-required="true">
           <button type="submit" 
                   [disabled]="busy"
                   [attr.aria-busy]="busy"
-                  aria-label="Add user story">
-            Add Story
+                  [attr.aria-label]="'Add ' + labelLevel2">
+            Add {{ labelLevel2 }}
           </button>
         </form>
         <ul class="work-item-list nested" 
@@ -90,28 +138,65 @@
             [attr.aria-labelledby]="'stories-heading-' + epic.id">
           <li *ngFor="let story of getStoriesForEpic(epic.id); let j = index" 
               class="work-item user-story"
+              [style.border-left-color]="colors.level2Border"
               role="treeitem"
               [attr.aria-expanded]="expandedStories[story.id] || false"
-              [attr.aria-label]="'User Story: ' + story.title + (story.description ? ', ' + story.description : '')"
+              [attr.aria-label]="labelLevel2 + ': ' + story.title + (story.description ? ', ' + story.description : '')"
               [attr.aria-level]="2"
               [attr.tabindex]="-1">
             <div class="work-item-head">
               <div>
-                <span class="badge story-badge" aria-hidden="true">Story</span>
+                <span class="badge story-badge" aria-hidden="true"
+                      [style.background]="colors.secondaryBg"
+                      [style.color]="colors.secondaryText">{{ labelLevel2 }}</span>
                 <span class="work-item-title" [id]="'story-title-id-' + story.id">{{story.title}}</span>
                 <div class="work-item-desc" *ngIf="story.description">{{story.description}}</div>
+                <div class="work-item-state" *ngIf="availableStates.length > 0">
+                  <button class="state-badge state-clickable"
+                          (click)="toggleStateEditor(story.id); $event.stopPropagation()"
+                          [attr.aria-label]="'Current state: ' + (workItemStates[story.id] || 'Not Set') + '. Click to change state'"
+                          [attr.aria-expanded]="editingStateFor === story.id">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    {{ workItemStates[story.id] || 'Not Set' }}
+                  </button>
+                  <div class="state-dropdown" *ngIf="editingStateFor === story.id">
+                    <button *ngFor="let state of availableStates"
+                            class="state-option"
+                            [class.active]="workItemStates[story.id] === state.name"
+                            (click)="changeWorkItemState(story.id, state); $event.stopPropagation()"
+                            [attr.aria-label]="'Set state to ' + state.name">
+                      {{ state.name }}
+                    </button>
+                  </div>
+                </div>
+                <app-workflow-state [workItemId]="story.id"
+                                    [currentStateName]="story.currentStateName || ''"
+                                    [stateColor]="story.currentStateColor || ''"
+                                    (transitioned)="load()"></app-workflow-state>
+                <app-custom-fields [entityId]="story.id" [domainType]="domainType" entityType="2" [requiredFields]="requiredFieldsForState(story.currentStateName)"></app-custom-fields>
               </div>
               <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for story: ' + story.title">
-                <button (click)="toggleStoryExpand(story.id)"
+                <button class="btn-icon"
+                        (click)="toggleStoryExpand(story.id)"
                         [attr.aria-expanded]="expandedStories[story.id] || false"
                         [attr.aria-controls]="'story-tasks-' + story.id"
-                        [attr.aria-label]="(expandedStories[story.id] ? 'Collapse' : 'Expand') + ' tasks for ' + story.title">
-                  {{expandedStories[story.id] ? 'Hide Tasks' : 'Show Tasks'}}
+                        [attr.aria-label]="(expandedStories[story.id] ? 'Collapse' : 'Expand') + ' ' + labelLevel3Plural + ' for ' + story.title"
+                        [title]="expandedStories[story.id] ? 'Hide ' + labelLevel3Plural : 'Show ' + labelLevel3Plural">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline *ngIf="!expandedStories[story.id]" points="6 9 12 15 18 9"></polyline>
+                    <polyline *ngIf="expandedStories[story.id]" points="18 15 12 9 6 15"></polyline>
+                  </svg>
                 </button>
-                <button (click)="deleteWorkItem(story.id)"
+                <button class="btn-icon btn-icon-danger"
+                        (click)="deleteWorkItem(story.id)"
                         [attr.aria-describedby]="'story-title-id-' + story.id"
-                        aria-label="Delete user story">
-                  Delete
+                        [attr.aria-label]="'Delete ' + labelLevel2"
+                        title="Delete">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -121,21 +206,21 @@
                  class="tasks-section"
                  [id]="'story-tasks-' + story.id"
                  role="group"
-                 [attr.aria-label]="'Tasks under ' + story.title">
-              <h5 id="tasks-heading-{{story.id}}">Tasks</h5>
-              <form (ngSubmit)="createTaskForStory(story.id)" class="form-inline" role="form" [attr.aria-label]="'Create task under ' + story.title">
-                <label [for]="'task-title-' + story.id" class="sr-only">Task title</label>
+                 [attr.aria-label]="labelLevel3Plural + ' under ' + story.title">
+              <h5 id="tasks-heading-{{story.id}}">{{ labelLevel3Plural }}</h5>
+              <form (ngSubmit)="createTaskForStory(story.id)" class="form-inline" role="form" [attr.aria-label]="'Create ' + labelLevel3 + ' under ' + story.title">
+                <label [for]="'task-title-' + story.id" class="sr-only">{{ labelLevel3 }} title</label>
                 <input [id]="'task-title-' + story.id"
                        [(ngModel)]="taskTitles[story.id]" 
                        [name]="'taskTitle-' + story.id" 
-                       placeholder="Task title" 
+                       [placeholder]="labelLevel3 + ' title'" 
                        required
                        aria-required="true">
                 <button type="submit" 
                         [disabled]="busy"
                         [attr.aria-busy]="busy"
-                        aria-label="Add task">
-                  Add Task
+                        [attr.aria-label]="'Add ' + labelLevel3">
+                  Add {{ labelLevel3 }}
                 </button>
               </form>
               <ul class="work-item-list nested" 
@@ -144,11 +229,14 @@
                 <li *ngFor="let task of tasksForStory[story.id]; let k = index" 
                     class="work-item task"
                     [class.completed]="task.isCompleted"
+                    [style.border-left-color]="colors.level3Border"
                     role="listitem"
-                    [attr.aria-label]="'Task: ' + task.title + (task.isCompleted ? ', completed' : ', pending')">
+                    [attr.aria-label]="labelLevel3 + ': ' + task.title + (task.isCompleted ? ', completed' : ', pending')">
                   <div class="work-item-head">
                     <div>
-                      <span class="badge task-badge" aria-hidden="true">Task</span>
+                      <span class="badge task-badge" aria-hidden="true"
+                            [style.background]="colors.tertiaryBg"
+                            [style.color]="colors.tertiaryText">{{ labelLevel3 }}</span>
                       <span class="work-item-title" [id]="'task-title-id-' + task.id">{{task.title}}</span>
                       <div class="work-item-desc" *ngIf="task.description">{{task.description}}</div>
                       <div *ngIf="task.isCompleted" role="status">
@@ -158,18 +246,27 @@
                           Completed<span *ngIf="task.completedAt"> on {{ task.completedAt | date:'medium' }}</span>
                         </span>
                       </div>
+                      <app-custom-fields [entityId]="task.id" [requiredFields]="requiredFieldsForState(task.currentStateName)" [domainType]="domainType" entityType="3"></app-custom-fields>
                     </div>
                     <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for task: ' + task.title">
-                      <button *ngIf="!task.isCompleted" 
+                      <button *ngIf="!task.isCompleted"
+                              class="btn-icon btn-icon-success"
                               (click)="completeTask(story.id, task.id)"
                               [attr.aria-describedby]="'task-title-id-' + task.id"
-                              aria-label="Mark task as complete">
-                        Complete
+                              aria-label="Mark task as complete"
+                              title="Complete">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
                       </button>
-                      <button (click)="deleteTask(story.id, task.id)"
+                      <button class="btn-icon btn-icon-danger"
+                              (click)="deleteTask(story.id, task.id)"
                               [attr.aria-describedby]="'task-title-id-' + task.id"
-                              aria-label="Delete task">
-                        Delete
+                              aria-label="Delete task"
+                              title="Delete">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                        </svg>
                       </button>
                     </div>
                   </div>
@@ -177,7 +274,7 @@
                 </li>
               </ul>
               <p *ngIf="tasksForStory[story.id]?.length === 0" role="status" aria-live="polite" class="small">
-                No tasks yet. Add your first task above.
+                No {{ labelLevel3Plural | lowercase }} yet. Add your first {{ labelLevel3 | lowercase }} above.
               </p>
             </div>
             <app-comments [workItemId]="story.id" [attr.aria-label]="'Comments for story: ' + story.title"></app-comments>
@@ -188,32 +285,32 @@
     </li>
   </ul>
   <p *ngIf="epics.length === 0" role="status" aria-live="polite" class="small">
-    No epics yet. Create your first epic above.
+    No {{ labelLevel1Plural | lowercase }} yet. Create your first {{ labelLevel1 | lowercase }} above.
   </p>
 </section>
 
-<!-- Standalone User Stories (no parent) -->
+<!-- Standalone {{ labelLevel2Plural }} (no parent) -->
 <section class="section" aria-labelledby="standalone-stories-heading">
-  <h3 id="standalone-stories-heading">Standalone User Stories</h3>
-  <form (ngSubmit)="createUserStory()" class="form-inline" role="form" aria-label="Create standalone user story">
-    <label for="standalone-story-title" class="sr-only">User Story title</label>
+  <h3 id="standalone-stories-heading">Standalone {{ labelLevel2Plural }}</h3>
+  <form (ngSubmit)="createUserStory()" class="form-inline" role="form" [attr.aria-label]="'Create standalone ' + labelLevel2">
+    <label for="standalone-story-title" class="sr-only">{{ labelLevel2 }} title</label>
     <input id="standalone-story-title"
            [(ngModel)]="storyTitle" 
            name="storyTitle" 
-           placeholder="User Story title" 
+           [placeholder]="labelLevel2 + ' title'" 
            required
            aria-required="true">
-    <label for="standalone-story-desc" class="sr-only">User Story description</label>
+    <label for="standalone-story-desc" class="sr-only">{{ labelLevel2 }} description</label>
     <input id="standalone-story-desc"
            [(ngModel)]="storyDescription" 
            name="storyDescription" 
            placeholder="Description"
-           aria-label="User Story description (optional)">
+           [attr.aria-label]="labelLevel2 + ' description (optional)'">
     <button type="submit" 
             [disabled]="busy"
             [attr.aria-busy]="busy"
-            aria-label="Add standalone user story">
-      Add Story
+            [attr.aria-label]="'Add standalone ' + labelLevel2">
+      Add {{ labelLevel2 }}
     </button>
   </form>
   <ul class="work-item-list" 
@@ -222,27 +319,64 @@
       (keydown)="onListKeydown($event)">
     <li *ngFor="let story of standaloneStories; let i = index" 
         class="work-item user-story"
+        [style.border-left-color]="colors.level2Border"
         role="listitem"
         [attr.tabindex]="i === 0 ? 0 : -1"
         [attr.aria-expanded]="expandedStories[story.id] || false"
-        [attr.aria-label]="'User Story: ' + story.title + (story.description ? ', ' + story.description : '')">
+        [attr.aria-label]="labelLevel2 + ': ' + story.title + (story.description ? ', ' + story.description : '')">
       <div class="work-item-head">
         <div>
-          <span class="badge story-badge" aria-hidden="true">Story</span>
+          <span class="badge story-badge" aria-hidden="true"
+                [style.background]="colors.secondaryBg"
+                [style.color]="colors.secondaryText">{{ labelLevel2 }}</span>
           <span class="work-item-title" [id]="'standalone-story-' + story.id">{{story.title}}</span>
           <div class="work-item-desc" *ngIf="story.description">{{story.description}}</div>
+          <div class="work-item-state" *ngIf="availableStates.length > 0">
+            <button class="state-badge state-clickable"
+                    (click)="toggleStateEditor(story.id); $event.stopPropagation()"
+                    [attr.aria-label]="'Current state: ' + (workItemStates[story.id] || 'Not Set') + '. Click to change state'"
+                    [attr.aria-expanded]="editingStateFor === story.id">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ workItemStates[story.id] || 'Not Set' }}
+            </button>
+            <div class="state-dropdown" *ngIf="editingStateFor === story.id">
+              <button *ngFor="let state of availableStates"
+                      class="state-option"
+                      [class.active]="workItemStates[story.id] === state.name"
+                      (click)="changeWorkItemState(story.id, state); $event.stopPropagation()"
+                      [attr.aria-label]="'Set state to ' + state.name">
+                {{ state.name }}
+              </button>
+            </div>
+          </div>
+          <app-workflow-state [workItemId]="story.id"
+                              [currentStateName]="story.currentStateName || ''"
+                              [stateColor]="story.currentStateColor || ''"
+                              (transitioned)="load()"></app-workflow-state>
+          <app-custom-fields [entityId]="story.id" [domainType]="domainType" entityType="2" [requiredFields]="requiredFieldsForState(story.currentStateName)"></app-custom-fields>
         </div>
         <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for story: ' + story.title">
-          <button (click)="toggleStoryExpand(story.id)"
+          <button class="btn-icon"
+                  (click)="toggleStoryExpand(story.id)"
                   [attr.aria-expanded]="expandedStories[story.id] || false"
                   [attr.aria-controls]="'standalone-story-tasks-' + story.id"
-                  [attr.aria-label]="(expandedStories[story.id] ? 'Collapse' : 'Expand') + ' tasks for ' + story.title">
-            {{expandedStories[story.id] ? 'Hide Tasks' : 'Show Tasks'}}
+                  [attr.aria-label]="(expandedStories[story.id] ? 'Collapse' : 'Expand') + ' ' + labelLevel3Plural + ' for ' + story.title"
+                  [title]="expandedStories[story.id] ? 'Hide ' + labelLevel3Plural : 'Show ' + labelLevel3Plural">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline *ngIf="!expandedStories[story.id]" points="6 9 12 15 18 9"></polyline>
+              <polyline *ngIf="expandedStories[story.id]" points="18 15 12 9 6 15"></polyline>
+            </svg>
           </button>
-          <button (click)="deleteWorkItem(story.id)"
+          <button class="btn-icon btn-icon-danger"
+                  (click)="deleteWorkItem(story.id)"
                   [attr.aria-describedby]="'standalone-story-' + story.id"
-                  aria-label="Delete user story">
-            Delete
+                  [attr.aria-label]="'Delete ' + labelLevel2"
+                  title="Delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+            </svg>
           </button>
         </div>
       </div>
@@ -252,21 +386,21 @@
            class="tasks-section"
            [id]="'standalone-story-tasks-' + story.id"
            role="group"
-           [attr.aria-label]="'Tasks under ' + story.title">
-        <h5 id="standalone-tasks-heading-{{story.id}}">Tasks</h5>
-        <form (ngSubmit)="createTaskForStory(story.id)" class="form-inline" role="form" [attr.aria-label]="'Create task under ' + story.title">
-          <label [for]="'standalone-task-title-' + story.id" class="sr-only">Task title</label>
+           [attr.aria-label]="labelLevel3Plural + ' under ' + story.title">
+        <h5 id="standalone-tasks-heading-{{story.id}}">{{ labelLevel3Plural }}</h5>
+        <form (ngSubmit)="createTaskForStory(story.id)" class="form-inline" role="form" [attr.aria-label]="'Create ' + labelLevel3 + ' under ' + story.title">
+          <label [for]="'standalone-task-title-' + story.id" class="sr-only">{{ labelLevel3 }} title</label>
           <input [id]="'standalone-task-title-' + story.id"
                  [(ngModel)]="taskTitles[story.id]" 
                  [name]="'taskTitle-standalone-' + story.id" 
-                 placeholder="Task title" 
+                 [placeholder]="labelLevel3 + ' title'" 
                  required
                  aria-required="true">
           <button type="submit" 
                   [disabled]="busy"
                   [attr.aria-busy]="busy"
-                  aria-label="Add task">
-            Add Task
+                  [attr.aria-label]="'Add ' + labelLevel3">
+            Add {{ labelLevel3 }}
           </button>
         </form>
         <ul class="work-item-list nested" 
@@ -275,11 +409,14 @@
           <li *ngFor="let task of tasksForStory[story.id]; let k = index" 
               class="work-item task"
               [class.completed]="task.isCompleted"
+              [style.border-left-color]="colors.level3Border"
               role="listitem"
-              [attr.aria-label]="'Task: ' + task.title + (task.isCompleted ? ', completed' : ', pending')">
+              [attr.aria-label]="labelLevel3 + ': ' + task.title + (task.isCompleted ? ', completed' : ', pending')">
             <div class="work-item-head">
               <div>
-                <span class="badge task-badge" aria-hidden="true">Task</span>
+                <span class="badge task-badge" aria-hidden="true"
+                      [style.background]="colors.tertiaryBg"
+                      [style.color]="colors.tertiaryText">{{ labelLevel3 }}</span>
                 <span class="work-item-title" [id]="'standalone-task-id-' + task.id">{{task.title}}</span>
                 <div class="work-item-desc" *ngIf="task.description">{{task.description}}</div>
                 <div *ngIf="task.isCompleted" role="status">
@@ -289,18 +426,27 @@
                     Completed<span *ngIf="task.completedAt"> on {{ task.completedAt | date:'medium' }}</span>
                   </span>
                 </div>
+                <app-custom-fields [entityId]="task.id" [domainType]="domainType" entityType="3" [requiredFields]="requiredFieldsForState(task.currentStateName)"></app-custom-fields>
               </div>
               <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for task: ' + task.title">
-                <button *ngIf="!task.isCompleted" 
+                <button *ngIf="!task.isCompleted"
+                        class="btn-icon btn-icon-success"
                         (click)="completeTask(story.id, task.id)"
                         [attr.aria-describedby]="'standalone-task-id-' + task.id"
-                        aria-label="Mark task as complete">
-                  Complete
+                        aria-label="Mark task as complete"
+                        title="Complete">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
                 </button>
-                <button (click)="deleteTask(story.id, task.id)"
+                <button class="btn-icon btn-icon-danger"
+                        (click)="deleteTask(story.id, task.id)"
                         [attr.aria-describedby]="'standalone-task-id-' + task.id"
-                        aria-label="Delete task">
-                  Delete
+                        aria-label="Delete task"
+                        title="Delete">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -308,13 +454,102 @@
           </li>
         </ul>
         <p *ngIf="tasksForStory[story.id]?.length === 0" role="status" aria-live="polite" class="small">
-          No tasks yet. Add your first task above.
+          No {{ labelLevel3Plural | lowercase }} yet. Add your first {{ labelLevel3 | lowercase }} above.
         </p>
       </div>
       <app-comments [workItemId]="story.id" [attr.aria-label]="'Comments for story: ' + story.title"></app-comments>
     </li>
   </ul>
   <p *ngIf="standaloneStories.length === 0" role="status" aria-live="polite" class="small">
-    No standalone user stories yet.
+    No standalone {{ labelLevel2Plural | lowercase }} yet.
+  </p>
+</section>
+
+<!-- Bugs Section (IT/Technology domains only) -->
+<section class="section" aria-labelledby="bugs-heading" *ngIf="isITDomain()">
+  <h3 id="bugs-heading">Bugs</h3>
+  <form (ngSubmit)="createBug()" class="form-inline" role="form" aria-label="Create new bug">
+    <label for="bug-title" class="sr-only">Bug title</label>
+    <input id="bug-title"
+           [(ngModel)]="bugTitle"
+           name="bugTitle"
+           placeholder="Bug title"
+           required
+           aria-required="true">
+    <label for="bug-desc" class="sr-only">Bug description</label>
+    <input id="bug-desc"
+           [(ngModel)]="bugDescription"
+           name="bugDescription"
+           placeholder="Description"
+           aria-label="Bug description (optional)">
+    <label for="bug-severity" class="sr-only">Severity</label>
+    <select id="bug-severity" [(ngModel)]="bugSeverity" name="bugSeverity" aria-label="Bug severity">
+      <option [ngValue]="1">Low</option>
+      <option [ngValue]="2">Medium</option>
+      <option [ngValue]="3">High</option>
+      <option [ngValue]="4">Critical</option>
+    </select>
+    <button type="submit"
+            [disabled]="busy || !bugTitle.trim()"
+            [attr.aria-busy]="busy"
+            aria-label="Add new bug">
+      Add Bug
+    </button>
+  </form>
+
+  <ul class="work-item-list" role="list" aria-labelledby="bugs-heading">
+    <li *ngFor="let bug of bugs; let i = index"
+        class="work-item bug"
+        role="listitem"
+        [attr.tabindex]="i === 0 ? 0 : -1"
+        [attr.aria-label]="'Bug: ' + bug.title + ', Severity: ' + severityLabel(bug.severity)">
+      <div class="work-item-head">
+        <div>
+          <span class="badge bug-badge" aria-hidden="true">Bug</span>
+          <span class="severity-badge" [class]="'severity-' + severityLabel(bug.severity)" [attr.aria-label]="'Severity: ' + severityLabel(bug.severity)">{{ severityLabel(bug.severity) }}</span>
+          <span class="work-item-title" [id]="'bug-title-' + bug.id">{{ bug.title }}</span>
+          <div class="work-item-desc" *ngIf="bug.description">{{ bug.description }}</div>
+          <div class="work-item-state" *ngIf="availableStates.length > 0">
+            <button class="state-badge state-clickable"
+                    (click)="toggleStateEditor(bug.id); $event.stopPropagation()"
+                    [attr.aria-label]="'Current state: ' + (workItemStates[bug.id] || 'Not Set') + '. Click to change state'"
+                    [attr.aria-expanded]="editingStateFor === bug.id">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ workItemStates[bug.id] || 'Not Set' }}
+            </button>
+            <div class="state-dropdown" *ngIf="editingStateFor === bug.id">
+              <button *ngFor="let state of availableStates"
+                      class="state-option"
+                      [class.active]="workItemStates[bug.id] === state.name"
+                      (click)="changeWorkItemState(bug.id, state); $event.stopPropagation()"
+                      [attr.aria-label]="'Set state to ' + state.name">
+                {{ state.name }}
+              </button>
+            </div>
+          </div>
+          <app-workflow-state [workItemId]="bug.id"
+                              [currentStateName]="bug.currentStateName || ''"
+                              [stateColor]="bug.currentStateColor || ''"
+                              (transitioned)="load()"></app-workflow-state>
+        </div>
+        <div class="work-item-actions" role="group" [attr.aria-label]="'Actions for bug: ' + bug.title">
+          <button class="btn-icon btn-icon-danger"
+                  (click)="deleteWorkItem(bug.id)"
+                  [attr.aria-describedby]="'bug-title-' + bug.id"
+                  aria-label="Delete bug"
+                  title="Delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <app-comments [workItemId]="bug.id" [attr.aria-label]="'Comments for bug: ' + bug.title"></app-comments>
+    </li>
+  </ul>
+  <p *ngIf="bugs.length === 0" role="status" aria-live="polite" class="small">
+    No bugs yet. Report your first bug above.
   </p>
 </section>

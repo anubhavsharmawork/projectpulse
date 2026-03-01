@@ -1,0 +1,93 @@
+{
+  "name": "Healthcare Project Template",
+  "domainType": "Healthcare",
+  "defaultWorkflow": {
+    "name": "Healthcare Default Workflow",
+    "states": [
+      { "name": "Intake", "order": 1, "isInitial": true, "isFinal": false },
+      { "name": "Assessment", "order": 2, "isInitial": false, "isFinal": false },
+      { "name": "In Progress", "order": 3, "isInitial": false, "isFinal": false },
+      { "name": "Compliance Review", "order": 4, "isInitial": false, "isFinal": false },
+      { "name": "Approved", "order": 5, "isInitial": false, "isFinal": false },
+      { "name": "Completed", "order": 6, "isInitial": false, "isFinal": true }
+    ]
+  },
+  "defaultNotificationRules": {
+    "onStateChange": true,
+    "onAssignment": true,
+    "onComment": true,
+    "onComplianceAlert": true
+  },
+  "customFields": [
+    {
+      "name": "PatientImpactLevel",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"None\",\"Low\",\"Moderate\",\"High\",\"Critical\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "EstimatedPatientsAffected",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "RegulatoryBody",
+      "fieldType": "MultiSelect",
+      "isRequired": false,
+      "options": "[\"Health Authority\",\"Standards Council\",\"Medicines Agency\",\"Privacy Commissioner\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "PHIDataInvolved",
+      "fieldType": "Boolean",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "PrivacyComplianceStatus",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"N/A\",\"Pending\",\"Compliant\",\"Non-Compliant\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "ClinicalRiskLevel",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Low\",\"Medium\",\"High\",\"Critical\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "StaffTrainingRequired",
+      "fieldType": "Boolean",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "TelehealthEnabled",
+      "fieldType": "Boolean",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    }
+  ],
+  "workItemTypeLabels": {
+    "1": "Initiative",
+    "2": "Action Item",
+    "3": "Task",
+    "4": "SubTask"
+  }
+}

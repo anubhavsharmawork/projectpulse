@@ -1,0 +1,40 @@
+{
+  "domainType": "Infrastructure",
+  "categories": [
+    {
+      "name": "Transportation",
+      "description": "Transportation infrastructure projects",
+      "defaultTeamRoles": [
+        { "role": "Transport Planner", "description": "Transportation planning and design" },
+        { "role": "Civil Engineer", "description": "Civil engineering and construction oversight" },
+        { "role": "Traffic Analyst", "description": "Traffic flow analysis and modeling" }
+      ]
+    },
+    {
+      "name": "Utilities",
+      "description": "Utility infrastructure maintenance and upgrades",
+      "defaultTeamRoles": [
+        { "role": "Utility Manager", "description": "Manages utility infrastructure programs" },
+        { "role": "Operations Coordinator", "description": "Day-to-day operations coordination" },
+        { "role": "Field Tech Lead", "description": "Field technical operations leadership" }
+      ]
+    },
+    {
+      "name": "Public Facilities",
+      "description": "Public buildings and facility management",
+      "defaultTeamRoles": [
+        { "role": "Facilities Manager", "description": "Facility operations and maintenance" },
+        { "role": "Architect", "description": "Architectural design and planning" },
+        { "role": "Maintenance Supervisor", "description": "Maintenance scheduling and oversight" }
+      ]
+    },
+    {
+      "name": "Environmental",
+      "description": "Environmental infrastructure and sustainability",
+      "defaultTeamRoles": [
+        { "role": "Environmental Planner", "description": "Environmental impact planning" },
+        { "role": "Sustainability Analyst", "description": "Sustainability metrics and programs" }
+      ]
+    }
+  ]
+}

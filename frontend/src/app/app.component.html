@@ -10,19 +10,41 @@
           aria-label="Go to home - Project Pulse Management">Project Pulse Management</span>
     <span class="spacer"></span>
     <div class="main-nav" aria-label="Main navigation">
-      <a class="nav-btn" *ngIf="(token$ | async)" routerLink="/projects" aria-current="page">Projects</a>
-      <app-mention-notifications *ngIf="(token$ | async)"></app-mention-notifications>
+      <a class="nav-btn" *ngIf="(token$ | async)" routerLink="/projects" routerLinkActive="active">Projects</a>
+      <a class="nav-btn" *ngIf="(token$ | async)" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a class="nav-btn" *ngIf="(token$ | async)" routerLink="/time-tracking" routerLinkActive="active">Time</a>
+      <a class="nav-btn" *ngIf="(token$ | async)" routerLink="/audit-logs" routerLinkActive="active">Audit</a>
+      <a class="nav-btn" *ngIf="(token$ | async)" routerLink="/admin" routerLinkActive="active">Admin</a>
+      <a class="nav-btn sa-link" *ngIf="(token$ | async) && isSystemAdminUser" routerLink="/system-admin" routerLinkActive="active">System Admin</a>
+      <span class="tenant-indicator" *ngIf="(token$ | async) && tenantName">
+        <span class="tenant-name-label">{{ tenantName }}</span>
+        <span class="tenant-tier-badge" [class]="'tier-' + (tenantTier || '').toLowerCase()">{{ tenantTier }}</span>
+      </span>
+      <app-notification-bell *ngIf="(token$ | async)"></app-notification-bell>
+      <button class="nav-btn help-nav-btn"
+              (click)="toggleHelp()"
+              aria-label="Open help center"
+              [attr.aria-expanded]="helpOpen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span class="help-btn-label">Help</span>
+      </button>
+      <app-user-prefs *ngIf="(token$ | async)"></app-user-prefs>
       <a class="nav-btn" *ngIf="!(token$ | async)" routerLink="/auth/login">Login</a>
       <a class="nav-btn" *ngIf="!(token$ | async)" routerLink="/auth/register">Register</a>
       <button class="nav-btn" *ngIf="(token$ | async)" (click)="logout()" aria-label="Logout from application">Logout</button>
     </div>
   </nav>
-
   <section class="hero reveal" aria-labelledby="uvp-heading" *ngIf="!isAuthPage">
     <div class="hero-bg" aria-hidden="true"></div>
     <div class="container hero-inner">
       <h1 id="uvp-heading" class="uvp">Build and track projects with clarity and speed</h1>
-      <p class="tag">A minimalist, accessible project pulse demo that highlights real-time collaboration and thoughtful UX.</p>
+      <p class="tag">A minimalist, accessible project pulse that bolsters real-time collaboration with a thoughtful UX.</p>
       <div class="cta" role="group" aria-label="Primary actions">
         <button class="cta-btn" 
                 (click)="primaryCta()"
@@ -39,10 +61,8 @@
     </div>
   </section>
 </header>
-
 <main id="main-content" [class]="isAuthPage ? 'auth-main' : 'container'" role="main" aria-label="Main content">
   <router-outlet></router-outlet>
-
   <section class="skills reveal" aria-label="Task completion progress" *ngIf="(token$ | async)">
     <h2 class="sr-only">Task Completion Progress</h2>
     <div class="skills-grid" role="list" aria-label="Progress by project">
@@ -61,7 +81,6 @@
           <span class="skill-fill" [style.width.%]="overall.percent" aria-hidden="true"></span>
         </div>
       </div>
-
       <div class="skill" *ngFor="let p of perProject; let i = index" role="listitem" aria-live="polite">
         <div class="skill-top">
           <span class="skill-name" [id]="'project-progress-label-' + i">{{p.name}}</span>
@@ -82,18 +101,72 @@
     <div class="small" *ngIf="statsError" role="alert" aria-live="assertive" style="color:#e53935">{{statsError}}</div>
   </section>
 </main>
-
 <footer class="site-footer" role="contentinfo">
+  <div class="footer-divider" aria-hidden="true"></div>
   <div class="container footer-inner">
-    <div class="small">&copy; {{year}} Anubhav Sharma. All rights reserved.</div>
-    <nav class="social" aria-label="Social media links">
-      <a href="https://www.linkedin.com/in/anubhav-sharma-/" 
-         target="_blank" 
-         rel="noreferrer noopener" 
-         aria-label="Visit Anubhav Sharma's LinkedIn profile (opens in new tab)" 
-         class="ml-sm">
-        <span class="icon" aria-hidden="true">in</span>
+    <span class="footer-copy">&copy; {{year}} Anubhav Sharma. All rights reserved.</span>
+    <span class="footer-spacer"></span>
+    <nav class="footer-links" aria-label="Footer links">
+      <button *ngIf="(token$ | async)"
+              class="footer-feedback-btn"
+              (click)="openFeedback()"
+              aria-label="Send product feedback">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Feedback
+      </button>
+      <a routerLink="/legal/view"
+         class="footer-legal-link"
+         aria-label="Privacy policy and terms of service">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Privacy &amp; Terms
+      </a>
+      <a href="https://www.linkedin.com/in/anubhav-sharma-/"
+         target="_blank"
+         rel="noreferrer noopener"
+         aria-label="LinkedIn profile (opens in new tab)"
+         class="footer-social">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
       </a>
     </nav>
   </div>
 </footer>
+
+<!-- Feedback modal -->
+<div class="feedback-overlay" *ngIf="feedbackOpen" (click)="closeFeedback()" aria-hidden="true"></div>
+<div class="feedback-modal" *ngIf="feedbackOpen" role="dialog" aria-labelledby="feedback-title" aria-modal="true">
+  <h3 id="feedback-title">Send Feedback</h3>
+  <p class="feedback-hint">Tell us what you think. Feedback may be stored and reviewed by the team.</p>
+  <textarea
+    [(ngModel)]="feedbackMessage"
+    class="feedback-textarea"
+    placeholder="What's on your mind? (min 10 characters)"
+    maxlength="2000"
+    rows="5"
+    aria-label="Your feedback message"
+    [attr.aria-invalid]="feedbackMessage.length > 0 && feedbackMessage.length < 10 ? 'true' : null"></textarea>
+  <div class="feedback-meta">
+    <span class="feedback-charcount" [class.over]="feedbackMessage.length > 1900">
+      {{feedbackMessage.length}} / 2000
+    </span>
+    <span class="feedback-validation" *ngIf="feedbackMessage.length > 0 && feedbackMessage.length < 10">
+      At least 10 characters required.
+    </span>
+  </div>
+  <div class="feedback-actions">
+    <button class="feedback-cancel" (click)="closeFeedback()" [disabled]="feedbackSubmitting">Cancel</button>
+    <button class="feedback-submit"
+            (click)="submitFeedback()"
+            [disabled]="feedbackSubmitting || feedbackMessage.trim().length < 10">
+      {{ feedbackSubmitting ? 'Sending...' : 'Submit Feedback' }}
+    </button>
+  </div>
+</div>
+
+<!-- Help panel -->
+<app-help-panel [(isOpen)]="helpOpen"></app-help-panel>

@@ -1,0 +1,77 @@
+{
+  "name": "Public Safety Project Template",
+  "domainType": "PublicSafety",
+  "defaultWorkflow": {
+    "name": "Public Safety Default Workflow",
+    "states": [
+      { "name": "Reported", "order": 1, "isInitial": true, "isFinal": false },
+      { "name": "Triage", "order": 2, "isInitial": false, "isFinal": false },
+      { "name": "Active Response", "order": 3, "isInitial": false, "isFinal": false },
+      { "name": "Under Investigation", "order": 4, "isInitial": false, "isFinal": false },
+      { "name": "Resolution", "order": 5, "isInitial": false, "isFinal": false },
+      { "name": "Closed", "order": 6, "isInitial": false, "isFinal": true }
+    ]
+  },
+  "defaultNotificationRules": {
+    "onStateChange": true,
+    "onAssignment": true,
+    "onEmergencyEscalation": true,
+    "onInterAgencyAlert": true
+  },
+  "customFields": [
+    {
+      "name": "EmergencyPriority",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Routine\",\"Elevated\",\"High\",\"Emergency\",\"Critical\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "IncidentType",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Fire\",\"Medical\",\"Law Enforcement\",\"Natural Disaster\",\"Hazmat\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "InterAgencyCoordination",
+      "fieldType": "Boolean",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "TargetResponseTime",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": "minutes",
+      "entityType": "2"
+    },
+    {
+      "name": "SafetyCertification",
+      "fieldType": "MultiSelect",
+      "isRequired": false,
+      "options": "[\"ISO45001\",\"AS/NZS4801\",\"Fire Safety Standard\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "TrainingCompletion",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": "percentage",
+      "entityType": "2"
+    }
+  ],
+  "workItemTypeLabels": {
+    "1": "Operation",
+    "2": "Action Plan",
+    "3": "Task",
+    "4": "SubTask"
+  }
+}

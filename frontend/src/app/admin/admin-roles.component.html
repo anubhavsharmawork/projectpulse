@@ -1,0 +1,58 @@
+<h3>Roles &amp; Permissions</h3>
+    <p class="admin-subtitle">RBAC overview — system-level roles and their permission matrix. These roles are independent of project domain.</p>
+
+    <!-- Read-only banner for non-admin users -->
+    <div class="readonly-banner" *ngIf="!isAdmin">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      View-only mode — admin privileges required to modify roles.
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-text" *ngIf="loading">Loading roles&hellip;</div>
+
+    <!-- Error state -->
+    <div class="error-banner" *ngIf="error" role="alert">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      {{ error }}
+    </div>
+
+    <!-- Reference data banner (shown when non-admin falls back to static roles) -->
+    <div class="reference-banner" *ngIf="isReference">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      Showing reference data — live configuration requires admin access.
+    </div>
+
+    <div class="roles-grid" *ngIf="!loading && !error">
+      <div class="role-card" *ngFor="let role of roles"
+           [class]="'border-' + role.color">
+        <div class="role-header">
+          <span class="role-icon" [style.background]="role.bg" aria-hidden="true">
+            {{ role.icon }}
+          </span>
+          <div>
+            <div class="role-name">{{ role.name }}</div>
+            <div class="role-system">{{ role.systemRole }}</div>
+          </div>
+        </div>
+        <div class="role-desc">{{ role.description }}</div>
+        <div class="permissions">
+          <div class="perm-category" *ngFor="let cat of role.permissionCategories">
+            <div class="perm-cat-name">{{ cat.category }}</div>
+            <div class="perm-list">
+              <span class="perm-item" *ngFor="let p of cat.permissions"
+                    [class.granted]="p.granted"
+                    [class.denied]="!p.granted">
+                <span class="perm-icon" aria-hidden="true">{{ p.granted ? '✓' : '—' }}</span>
+                {{ p.name }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

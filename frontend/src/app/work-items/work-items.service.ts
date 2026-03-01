@@ -7,7 +7,15 @@ import { Observable } from 'rxjs';
 export enum WorkItemType {
   Epic = 1,
   UserStory = 2,
-  Task = 3
+  Task = 3,
+  Bug = 5
+}
+
+export enum BugSeverity {
+  Low = 1,
+  Medium = 2,
+  High = 3,
+  Critical = 4
 }
 
 export interface WorkItemDto {
@@ -22,6 +30,16 @@ export interface WorkItemDto {
   createdAt: string;
   completedAt?: string;
   type: WorkItemType;
+  currentStateName?: string;
+  currentStateColor?: string;
+}
+
+export interface BugDto extends WorkItemDto {
+  severity: BugSeverity;
+  stepsToReproduce?: string;
+  expectedBehavior?: string;
+  actualBehavior?: string;
+  environment?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -72,5 +90,21 @@ export class WorkItemsService {
 
   delete(projectId: string, workItemId: string) {
     return this.http.delete(`${this.baseUrl}/api/v1/projects/${projectId}/work-items/${workItemId}`, this.options());
+  }
+
+  getBugs(projectId: string): Observable<BugDto[]> {
+    return this.http.get<BugDto[]>(`${this.baseUrl}/api/v1/projects/${projectId}/work-items/bugs`, this.options());
+  }
+
+  createBug(projectId: string, input: { title: string; description?: string; parentId?: string; severity?: BugSeverity; stepsToReproduce?: string; expectedBehavior?: string; actualBehavior?: string; environment?: string }) {
+    return this.http.post(`${this.baseUrl}/api/v1/projects/${projectId}/work-items/bugs`, input, this.options());
+  }
+
+  updateWorkItemState(projectId: string, workItemId: string, targetStateId: string, comment?: string) {
+    return this.http.post(
+      `${this.baseUrl}/api/v1/projects/${projectId}/work-items/${workItemId}/state`,
+      { targetStateId, comment },
+      this.options()
+    );
   }
 }

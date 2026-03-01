@@ -1,0 +1,141 @@
+{
+  "name": "IT Project Template",
+  "domainType": "IT",
+  "defaultWorkflow": {
+    "name": "IT Default Workflow",
+    "states": [
+      { "name": "Backlog", "order": 1, "isInitial": true, "isFinal": false },
+      { "name": "To Do", "order": 2, "isInitial": false, "isFinal": false },
+      { "name": "In Progress", "order": 3, "isInitial": false, "isFinal": false },
+      { "name": "Code Review", "order": 4, "isInitial": false, "isFinal": false },
+      { "name": "QA", "order": 5, "isInitial": false, "isFinal": false },
+      { "name": "Done", "order": 6, "isInitial": false, "isFinal": true }
+    ]
+  },
+  "defaultNotificationRules": {
+    "onStateChange": true,
+    "onAssignment": true,
+    "onComment": true,
+    "onBlocked": true
+  },
+  "customFields": [
+    {
+      "name": "ReleaseVersion",
+      "fieldType": "Text",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "RiskLevel",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Low\",\"Medium\",\"High\",\"Critical\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "ComplianceRequirement",
+      "fieldType": "MultiSelect",
+      "isRequired": false,
+      "options": "[\"SOC2\",\"GDPR\",\"PCI-DSS\",\"Privacy Act\",\"None\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "SprintVelocity",
+      "fieldType": "Calculated",
+      "isRequired": false,
+      "options": null,
+      "validationRule": "sum_completed_story_points_per_sprint",
+      "entityType": "1"
+    },
+    {
+      "name": "StoryPoints",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": "[1,2,3,5,8,13,21]",
+      "validationRule": "fibonacci",
+      "entityType": "2"
+    },
+    {
+      "name": "SprintNumber",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "AcceptanceCriteria",
+      "fieldType": "RichText",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "TechDebtFlag",
+      "fieldType": "Boolean",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "TechDebtCategory",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Refactoring\",\"Missing Tests\",\"Obsolete Deps\",\"Code Smells\",\"Architecture Debt\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "BugSeverity",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Cosmetic\",\"Minor\",\"Major\",\"Critical\",\"Blocker\"]",
+      "validationRule": null,
+      "entityType": "3"
+    },
+    {
+      "name": "BugPriority",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Low\",\"Medium\",\"High\",\"Urgent\"]",
+      "validationRule": null,
+      "entityType": "3"
+    },
+    {
+      "name": "AffectedComponent",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Frontend\",\"Backend\",\"Database\",\"API\",\"Infrastructure\",\"Mobile\"]",
+      "validationRule": null,
+      "entityType": "3"
+    },
+    {
+      "name": "CodeReviewStatus",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Not Started\",\"In Review\",\"Approved\",\"Changes Requested\"]",
+      "validationRule": null,
+      "entityType": "3"
+    },
+    {
+      "name": "DeploymentEnvironment",
+      "fieldType": "MultiSelect",
+      "isRequired": false,
+      "options": "[\"Dev\",\"Staging\",\"UAT\",\"Production\"]",
+      "validationRule": null,
+      "entityType": "3"
+    }
+  ],
+  "workItemTypeLabels": {
+    "1": "Epic",
+    "2": "User Story",
+    "3": "Task",
+    "4": "SubTask"
+  }
+}

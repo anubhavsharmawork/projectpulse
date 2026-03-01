@@ -1,0 +1,76 @@
+{
+  "name": "Public Safety Workflow",
+  "domainType": "PublicSafety",
+  "states": [
+    {
+      "name": "Identified",
+      "order": 1,
+      "color": "#6B7280",
+      "isInitial": true,
+      "isFinal": false,
+      "allowedTransitions": ["Risk Assessment"],
+      "requiredFields": ["EmergencyPriority"],
+      "notifyOnEntry": false
+    },
+    {
+      "name": "Risk Assessment",
+      "order": 2,
+      "color": "#F59E0B",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Resource Planning", "Identified"],
+      "requiredFields": ["IncidentType"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Resource Planning",
+      "order": 3,
+      "color": "#3B82F6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Training/Deployment", "Risk Assessment"],
+      "requiredFields": ["TargetResponseTime"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Training/Deployment",
+      "order": 4,
+      "color": "#8B5CF6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Active", "Resource Planning"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Active",
+      "order": 5,
+      "color": "#EC4899",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Review"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Review",
+      "order": 6,
+      "color": "#10B981",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Closed", "Active"],
+      "requiredFields": ["TrainingCompletion"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Closed",
+      "order": 7,
+      "color": "#22C55E",
+      "isInitial": false,
+      "isFinal": true,
+      "allowedTransitions": [],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    }
+  ]
+}

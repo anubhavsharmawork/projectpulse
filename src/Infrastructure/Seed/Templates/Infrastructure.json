@@ -1,0 +1,93 @@
+{
+  "name": "Infrastructure Project Template",
+  "domainType": "Infrastructure",
+  "defaultWorkflow": {
+    "name": "Infrastructure Default Workflow",
+    "states": [
+      { "name": "Proposal", "order": 1, "isInitial": true, "isFinal": false },
+      { "name": "Funding Review", "order": 2, "isInitial": false, "isFinal": false },
+      { "name": "Design", "order": 3, "isInitial": false, "isFinal": false },
+      { "name": "Construction", "order": 4, "isInitial": false, "isFinal": false },
+      { "name": "Commissioning", "order": 5, "isInitial": false, "isFinal": false },
+      { "name": "Operational", "order": 6, "isInitial": false, "isFinal": true }
+    ]
+  },
+  "defaultNotificationRules": {
+    "onStateChange": true,
+    "onAssignment": true,
+    "onBudgetThreshold": true,
+    "onPublicImpactAlert": true
+  },
+  "customFields": [
+    {
+      "name": "CostEstimate",
+      "fieldType": "Currency",
+      "isRequired": false,
+      "options": null,
+      "validationRule": "$",
+      "entityType": "1"
+    },
+    {
+      "name": "ActualCost",
+      "fieldType": "Currency",
+      "isRequired": false,
+      "options": null,
+      "validationRule": "$",
+      "entityType": "1"
+    },
+    {
+      "name": "PublicImpactLevel",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Minimal\",\"Moderate\",\"Significant\",\"Major\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "AffectedPopulation",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "FundingSource",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Council\",\"Government Grant\",\"Regional Grant\",\"Private Investment\",\"PPP\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "EnvironmentalAssessment",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Not Required\",\"Pending\",\"Approved\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "AssetType",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Road\",\"Bridge\",\"Water Main\",\"Sewer\",\"Electrical Grid\",\"Transit\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "MaintenanceSchedule",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Weekly\",\"Monthly\",\"Quarterly\",\"Annual\"]",
+      "validationRule": null,
+      "entityType": "2"
+    }
+  ],
+  "workItemTypeLabels": {
+    "1": "Program",
+    "2": "Work Package",
+    "3": "Task",
+    "4": "SubTask"
+  }
+}

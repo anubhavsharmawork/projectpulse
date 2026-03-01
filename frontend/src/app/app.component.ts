@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { API_BASE_URL } from './core/api.config';
 import { DemoAuthService } from './core/demo-auth.service';
+import { TenantService } from './core/services/tenant.service';
 import { Subscription, filter } from 'rxjs';
 
 @Component({
@@ -28,9 +29,24 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private signalrService: any = null;
   private notifyService: any = null;
   private mentionNotificationsService: any = null;
-  
+  private feedbackService: any = null;
+
   // Lazy loaded component
   mentionNotificationsComponent: Type<any> | null = null;
+
+  // Feedback modal state
+  feedbackOpen = false;
+  feedbackMessage = '';
+  feedbackSubmitting = false;
+
+  // Help panel state
+  helpOpen = false;
+
+  // Tenant context
+  tenantName: string | null = null;
+  tenantTier: string | null = null;
+  isSystemAdminUser = false;
+  private tenantSubscription?: Subscription;
 
   constructor(
     private http: HttpClient,
@@ -38,7 +54,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     @Inject(API_BASE_URL) private baseUrl: string,
     private el: ElementRef<HTMLElement>,
-    private injector: Injector
+    private injector: Injector,
+    private tenantService: TenantService
   ) {
     this.checkAuthRoute(this.router.url);
   }
@@ -82,10 +99,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadProgress();
         this.loadMentionsComponent();
         this.connectSignalR(tok);
+        this.loadTenantContext();
       } else {
         this.perProject = []; 
         this.overall = {completed:0,total:0,percent:0};
         this.mentionNotificationsComponent = null;
+        this.tenantName = null;
+        this.tenantTier = null;
+        this.isSystemAdminUser = false;
         this.disconnectSignalR();
       }
     });
@@ -123,8 +144,20 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private loadTenantContext() {
+    this.isSystemAdminUser = this.tenantService.isSystemAdmin();
+    this.tenantSubscription?.unsubscribe();
+    this.tenantSubscription = this.tenantService.loadCurrentTenant().subscribe(t => {
+      if (t) {
+        this.tenantName = t.name;
+        this.tenantTier = t.tier;
+      }
+    });
+  }
+
   ngOnDestroy() {
     this.tokenSubscription?.unsubscribe();
+    this.tenantSubscription?.unsubscribe();
     this.disconnectSignalR();
     this.routerSubscription?.unsubscribe();
   }
@@ -249,8 +282,64 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async logout() { 
-    this.auth.clear(); 
+    this.auth.clear();
+    this.tenantService.clear();
+    this.tenantName = null;
+    this.tenantTier = null;
+    this.isSystemAdminUser = false;
     this.router.navigateByUrl('/auth/login');
     (await this.getNotify()).show('Logged out');
+  }
+
+  /** Lazy load FeedbackService */
+  private async getFeedbackService() {
+    if (!this.feedbackService) {
+      const { FeedbackService } = await import('./core/services/feedback.service');
+      this.feedbackService = this.injector.get(FeedbackService);
+    }
+    return this.feedbackService;
+  }
+
+  toggleHelp() {
+    this.helpOpen = !this.helpOpen;
+  }
+
+  openFeedback() {
+    this.feedbackOpen = true;
+    this.feedbackMessage = '';
+    this.feedbackSubmitting = false;
+  }
+
+  closeFeedback() {
+    if (this.feedbackSubmitting) return;
+    this.feedbackOpen = false;
+    this.feedbackMessage = '';
+  }
+
+  async submitFeedback() {
+    const message = this.feedbackMessage.trim();
+    if (message.length < 10) return;
+
+    this.feedbackSubmitting = true;
+    try {
+      const svc = await this.getFeedbackService();
+      svc.submit(message).subscribe({
+        next: async () => {
+          this.feedbackSubmitting = false;
+          this.feedbackOpen = false;
+          this.feedbackMessage = '';
+          (await this.getNotify()).show('Thanks for your feedback!');
+        },
+        error: async (err: any) => {
+          this.feedbackSubmitting = false;
+          const detail = err?.error?.detail;
+          const msg = typeof detail === 'string' && detail ? detail : 'Failed to send feedback. Please try again.';
+          (await this.getNotify()).error(msg);
+        }
+      });
+    } catch {
+      this.feedbackSubmitting = false;
+      (await this.getNotify()).error('Failed to send feedback. Please try again.');
+    }
   }
 }

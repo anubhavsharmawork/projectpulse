@@ -1,0 +1,171 @@
+<div class="page-header">
+  <div>
+    <h2>Team Management</h2>
+    <div class="subtitle">Manage team members, roles, and capacity</div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading" role="status" aria-live="polite">Loading team data&hellip;</div>
+
+<!-- ── Capacity Overview ── -->
+<div class="kpi-grid" *ngIf="capacity" role="list" aria-label="Team capacity overview">
+  <div class="kpi-card blue" role="listitem">
+    <div class="kpi-label">Total Members</div>
+    <div class="kpi-value">{{ capacity.totalMembers }}</div>
+  </div>
+  <div class="kpi-card green" role="listitem">
+    <div class="kpi-label">Available Hours</div>
+    <div class="kpi-value">{{ capacity.totalAvailableHours }}h</div>
+    <div class="kpi-sub">per week</div>
+  </div>
+  <div class="kpi-card amber" role="listitem">
+    <div class="kpi-label">Allocated Hours</div>
+    <div class="kpi-value">{{ capacity.totalAllocatedHours | number:'1.1-1' }}h</div>
+    <div class="kpi-sub">past 7 days</div>
+  </div>
+  <div class="kpi-card" [ngClass]="utilColor(capacity.utilizationPercentage)" role="listitem">
+    <div class="kpi-label">Utilization</div>
+    <div class="kpi-value">{{ capacity.utilizationPercentage }}%</div>
+    <div class="util-bar-track">
+      <div class="util-bar-fill" [class]="utilBarColor(capacity.utilizationPercentage)"
+           [style.width.%]="capacity.utilizationPercentage"
+           role="progressbar"
+           [attr.aria-valuenow]="capacity.utilizationPercentage"
+           aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Assign Member Form ── -->
+<div class="create-form" role="form" aria-label="Assign member to project">
+  <h3>Assign Member to Project</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="tm-username">Username</label>
+      <input id="tm-username" type="text" [(ngModel)]="newUsername"
+             placeholder="Enter username (e.g. john.doe)"
+             (blur)="resolveUsername()"
+             autocomplete="off"
+             [attr.aria-invalid]="resolveError ? 'true' : null"
+             [attr.aria-describedby]="resolveError ? 'username-error' : 'username-hint'" />
+      <small id="username-hint" class="form-hint">
+        Usually the part before @ in their email
+      </small>
+      <small *ngIf="resolvedUser" class="form-hint form-hint-success" aria-live="polite">
+        ✓ {{ resolvedUser.displayName }}
+      </small>
+      <small *ngIf="resolveError" id="username-error" class="form-hint form-hint-error" role="alert" aria-live="assertive">
+        {{ resolveError }}
+      </small>
+    </div>
+    <div class="form-group form-group-sm">
+      <label for="tm-role">Role</label>
+      <select id="tm-role" [(ngModel)]="newRole">
+        <option *ngFor="let r of projectRoles" [value]="r.roleName">{{ r.roleName }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="tm-skills">Skills <span class="optional-hint">(optional)</span></label>
+      <input id="tm-skills" type="text" [(ngModel)]="newSkills" placeholder="Comma-separated" />
+    </div>
+    <div class="form-group form-group-xs">
+      <label for="tm-hours">Hours/week</label>
+      <input id="tm-hours" type="number" [(ngModel)]="newHours" min="0" step="1" />
+    </div>
+    <div class="form-group form-group-xs">
+      <label for="tm-cost">Cost Rate <span class="optional-hint">($)</span></label>
+      <input id="tm-cost" type="number" [(ngModel)]="newCostRate" min="0" step="5" />
+    </div>
+    <button class="btn-primary" (click)="assignMember()"
+            [disabled]="saving || !newUsername.trim() || resolving"
+            [attr.aria-busy]="saving"
+            aria-label="Assign member">
+      {{ saving ? 'Assigning...' : 'Assign' }}
+    </button>
+  </div>
+</div>
+
+<!-- ── Members Table ── -->
+<div class="section-title" *ngIf="members.length > 0">
+  <span class="dot dot-members"></span>Team Members
+  <span class="member-count">{{ members.length }}</span>
+</div>
+<div class="table-wrapper" *ngIf="members.length > 0">
+  <table class="data-table" aria-label="Team members">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Skills</th>
+        <th>Hours/Wk</th>
+        <th>Cost Rate</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let m of members">
+        <td class="name-cell">{{ m.displayName }}</td>
+        <td><span class="role-badge">{{ m.role }}</span></td>
+        <td>
+          <span class="skill-tag" *ngFor="let s of splitSkills(m.skills)">{{ s }}</span>
+          <span *ngIf="!m.skills" class="text-muted">—</span>
+        </td>
+        <td>{{ m.availabilityHoursPerWeek }}h</td>
+        <td>${{ m.costRate | number:'1.0-0' }}</td>
+        <td>
+          <button class="btn-sm danger" (click)="unassignUser(m.userId)"
+                  [attr.aria-label]="'Unassign ' + m.displayName">Unassign</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── Capacity per member ── -->
+<ng-container *ngIf="capacity && capacity.members.length > 0">
+  <div class="section-title">
+    <span class="dot dot-capacity"></span>Member Capacity
+  </div>
+  <div class="table-wrapper">
+    <table class="data-table" aria-label="Member capacity breakdown">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Available</th>
+          <th>Allocated</th>
+          <th>Utilization</th>
+          <th>Open Tasks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let mc of capacity.members">
+          <td class="name-cell">{{ mc.displayName }}</td>
+          <td><span class="role-badge">{{ mc.role }}</span></td>
+          <td>{{ mc.availableHoursPerWeek }}h</td>
+          <td>{{ mc.allocatedHours | number:'1.1-1' }}h</td>
+          <td>
+            <div class="util-cell">
+              <span class="util-pct">{{ mc.utilizationPercentage }}%</span>
+              <div class="util-bar-track util-bar-inline">
+                <div class="util-bar-fill" [class]="utilBarColor(mc.utilizationPercentage)"
+                     [style.width.%]="mc.utilizationPercentage"></div>
+              </div>
+            </div>
+          </td>
+          <td>{{ mc.assignedTaskCount }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-container>
+
+<div *ngIf="members.length === 0 && !loading" class="empty-state" role="status" aria-live="polite">
+  <div class="empty-icon" aria-hidden="true">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+  </div>
+  <p>No team members yet. Assign users to this project using the form above.</p>
+</div>

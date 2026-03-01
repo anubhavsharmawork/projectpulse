@@ -1,12 +1,18 @@
+using API.Converters;
 using API.Hubs;
+using Application.Common.Interfaces;
 using Asp.Versioning;
 using AspNetCoreRateLimit;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.PostgreSql;
 using Infrastructure;
 using Infrastructure.Persistence;
 using Infrastructure.Sql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -79,7 +85,15 @@ builder.Services.Configure<IpRateLimitOptions>(options =>
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddInMemoryRateLimiting();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+        // ISO 8601 UTC date/time serialization
+        options.JsonSerializerOptions.Converters.Add(new Iso8601DateTimeConverter());
+        options.JsonSerializerOptions.Converters.Add(new Iso8601NullableDateTimeConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 // API Versioning
@@ -124,6 +138,23 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
 
 // Infrastructure (DbContext, S3, JWT)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Hangfire background job processing with PostgreSQL persistent storage
+var hangfireConn = Infrastructure.DependencyInjection.ResolveConnectionString(builder.Configuration);
+if (!string.IsNullOrWhiteSpace(hangfireConn))
+{
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(opts => opts.UseNpgsqlConnection(hangfireConn)));
+
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = 2;
+        options.Queues = new[] { "default" };
+    });
+}
 
 // IHttpContextAccessor for command handlers
 builder.Services.AddHttpContextAccessor();
@@ -190,6 +221,29 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
     options.AddPolicy("MemberPolicy", policy => policy.RequireRole("Member", "Admin"));
+    options.AddPolicy("SystemAdminPolicy", policy => policy.RequireAssertion(context =>
+        context.User.HasClaim("system_role", "SystemAdmin")));
+
+    // SystemAdmin write operations — requires SystemAdmin role AND not a demo user
+    options.AddPolicy("SystemAdminWritePolicy", policy => policy.RequireAssertion(context =>
+        (context.User.HasClaim("system_role", "SystemAdmin") || context.User.IsInRole("Admin"))
+        && !context.User.HasClaim("is_demo", "true")));
+
+    // Permission-based policy: requires "Admin.ManageRoles" in JWT permission claims
+    options.AddPolicy("AdminManageRolesPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim("permission", "Admin.ManageRoles")
+            || context.User.IsInRole("Admin")));
+
+    // RBAC team management policies (role-based, most restrictive wins)
+    options.AddPolicy("TeamViewCapacityPolicy", policy =>
+        policy.RequireRole("Admin", "Member"));
+    options.AddPolicy("TeamAddMembersPolicy", policy =>
+        policy.RequireRole("Admin"));
+    options.AddPolicy("TeamRemoveMembersPolicy", policy =>
+        policy.RequireRole("Admin"));
+    options.AddPolicy("TeamChangeRolesPolicy", policy =>
+        policy.RequireRole("Admin"));
 });
 
 // Health checks
@@ -203,9 +257,13 @@ using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var migrationsSucceeded = false;
+    var isRelational = db.Database.IsRelational();
 
-    try
+    if (isRelational)
     {
+        try
+        {
         var conn = db.Database.GetDbConnection();
         // Log minimal connection info (no password)
         logger.LogInformation("DB provider: {Provider}; DataSource: {DataSource}; Database: {Db}", conn.GetType().Name, conn.DataSource, conn.Database);
@@ -251,7 +309,6 @@ using (var scope = app.Services.CreateScope())
     }
 
     const int maxAttempts = 8; // try a bit longer on cold starts
-    var migrationsSucceeded = false;
     for (int attempt = 1; attempt <= maxAttempts; attempt++)
     {
         try
@@ -326,17 +383,20 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("WIPE_DB_ON_STARTUP disabled");
     }
 
-    // Seed demo data (only if schema is present)
-    if (migrationsSucceeded)
+    }
+    else
     {
-        try
-        {
-            await app.Services.SeedDemoAsync(logger);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Seeding failed, continuing startup without demo data.");
-        }
+        logger.LogWarning("Database provider '{Provider}' is not relational. Skipping migrations and schema management.", db.Database.ProviderName ?? "(unknown)");
+        migrationsSucceeded = true;
+    }
+
+    // Seed demo data (only if schema is present)
+    // All seeders now run via DatabaseSeederHostedService (background) so that
+    // Kestrel binds to $PORT immediately and Heroku's 60-second boot-timeout
+    // is never exceeded. See Infrastructure/Persistence/DatabaseSeederHostedService.cs.
+    if (!migrationsSucceeded)
+    {
+        logger.LogWarning("Migrations did not succeed — background seeding will be skipped by the hosted service.");
     }
 }
 
@@ -388,13 +448,31 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseHttpsRedirection();
 
+// Enforce en-GB locale
+var supportedCultures = new[] { "en-GB" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture("en-GB")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
+
 // Enable response compression
 app.UseResponseCompression();
 
 // Serve SPA static files from wwwroot (Angular build) with caching
+// Explicit MIME type mappings so deployed environments always return correct Content-Type
+var contentTypeProvider = new FileExtensionContentTypeProvider();
+contentTypeProvider.Mappings[".css"] = "text/css";
+contentTypeProvider.Mappings[".js"] = "application/javascript";
+contentTypeProvider.Mappings[".json"] = "application/json";
+contentTypeProvider.Mappings[".woff"] = "font/woff";
+contentTypeProvider.Mappings[".woff2"] = "font/woff2";
+
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
+    ContentTypeProvider = contentTypeProvider,
     OnPrepareResponse = ctx =>
     {
         var path = ctx.Context.Request.Path.Value ?? "";
@@ -428,6 +506,8 @@ app.UseRouting();
 app.UseCors("frontend");
 
 app.UseAuthentication();
+app.UseMiddleware<API.Middleware.TenantMiddleware>();
+app.UseMiddleware<API.Middleware.LegalAcceptanceMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -435,9 +515,35 @@ app.MapHub<ProjectHub>("/hubs/project");
 app.MapHealthChecks("/health/live");
 app.MapHealthChecks("/health/ready");
 
+// Hangfire dashboard (admin-only)
+app.MapHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAdminAuthorizationFilter() }
+});
+
+// Register recurring Hangfire jobs
+RecurringJob.AddOrUpdate<IFeedbackProcessor>(
+    "feedback-daily-maintenance",
+    p => p.RunDailyMaintenanceAsync(),
+    Cron.Daily,
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
 // Fallback to index.html for client-side routes
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+/// <summary>
+/// Restricts the Hangfire dashboard to users in the "Admin" role.
+/// </summary>
+public class HangfireAdminAuthorizationFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context)
+    {
+        var httpContext = context.GetHttpContext();
+        return httpContext.User.Identity?.IsAuthenticated == true
+            && httpContext.User.IsInRole("Admin");
+    }
+}
 
 public partial class Program { }

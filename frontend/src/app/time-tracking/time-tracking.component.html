@@ -1,0 +1,120 @@
+<div class="page-header">
+  <h2>Time Tracking</h2>
+</div>
+
+<!-- ── Log Time Form ── -->
+<div class="log-form" role="form" aria-label="Log time entry">
+  <h3>Log Time</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="tt-project">Project</label>
+      <select id="tt-project" [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectChange()">
+        <option value="">-- Select Project --</option>
+        <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+      </select>
+    </div>
+    <div class="form-group" style="min-width: 220px;">
+      <label for="tt-work-item">Work Item</label>
+      <div class="search-select-wrapper">
+        <input id="tt-work-item" type="text"
+               [(ngModel)]="workItemSearch"
+               (focus)="onWorkItemSearchFocus()"
+               (blur)="onWorkItemSearchBlur()"
+               (input)="onWorkItemSearchInput()"
+               [placeholder]="workItemsLoading ? 'Loading...' : (selectedProjectId ? 'Search work items...' : 'Select a project first')"
+               [disabled]="!selectedProjectId || workItemsLoading"
+               autocomplete="off" />
+        <div class="search-dropdown" *ngIf="showWorkItemDropdown && filteredWorkItems.length > 0">
+          <div class="search-dropdown-item"
+               *ngFor="let w of filteredWorkItems"
+               (mousedown)="selectWorkItem(w)">
+            {{ workItemTypeLabel(w.type) }}: {{ w.title }}
+          </div>
+        </div>
+      </div>
+      <div class="wi-confirmation" *ngIf="selectedWorkItem">
+        ✓ {{ workItemTypeLabel(selectedWorkItem.type) }}: {{ selectedWorkItem.title }}
+      </div>
+    </div>
+    <div class="form-group" style="max-width: 120px;">
+      <label for="tt-hours">Hours</label>
+      <input id="tt-hours" type="number" [(ngModel)]="hours" min="0.25" step="0.25" />
+    </div>
+    <div class="form-group" style="max-width: 180px;">
+      <label for="tt-date">Date</label>
+      <input id="tt-date" type="date" [(ngModel)]="loggedDate" />
+    </div>
+    <div class="form-group">
+      <label for="tt-desc">Notes</label>
+      <input id="tt-desc" type="text" [(ngModel)]="description" placeholder="Optional notes" />
+    </div>
+    <div class="checkbox-group">
+      <input id="tt-billable" type="checkbox" [(ngModel)]="isBillable" />
+      <label for="tt-billable">Billable</label>
+    </div>
+    <button class="btn-primary" (click)="logTime()" [disabled]="!canLog"
+            aria-label="Log time entry">
+      {{ saving ? 'Saving...' : 'Log Time' }}
+    </button>
+  </div>
+</div>
+
+<!-- ── Filters ── -->
+<div class="filters" role="search" aria-label="Filter time entries">
+  <div class="filter-group">
+    <label for="tf-project">Project</label>
+    <select id="tf-project" [(ngModel)]="filterProject">
+      <option value="">All Projects</option>
+      <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="tf-from">From</label>
+    <input id="tf-from" type="date" [(ngModel)]="filterFrom" />
+  </div>
+  <div class="filter-group">
+    <label for="tf-to">To</label>
+    <input id="tf-to" type="date" [(ngModel)]="filterTo" />
+  </div>
+  <button class="btn-filter" (click)="loadEntries()" aria-label="Apply filters">Apply</button>
+</div>
+
+<!-- ── Summary ── -->
+<div class="form-row" style="gap: 1.5rem; margin-bottom: 1rem;" *ngIf="entries.length > 0">
+  <span style="font-size: 0.875rem; color: #374151;">
+    <strong>{{ totalHours | number:'1.1-2' }}</strong> total hours
+    &middot;
+    <strong>{{ billableHours | number:'1.1-2' }}</strong> billable
+  </span>
+</div>
+
+<!-- ── Entries Table ── -->
+<table class="entries-table" *ngIf="entries.length > 0" aria-label="Time entries">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Work Item</th>
+      <th>User</th>
+      <th>Hours</th>
+      <th>Notes</th>
+      <th>Billable</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let e of entries">
+      <td>{{ e.loggedDate | date:'mediumDate' }}</td>
+      <td>{{ e.workItemTitle }}</td>
+      <td>{{ e.userDisplayName }}</td>
+      <td>{{ e.hours | number:'1.1-2' }}</td>
+      <td>{{ e.description || '—' }}</td>
+      <td>
+        <span class="billable-badge" [class]="e.isBillable ? 'billable-yes' : 'billable-no'">
+          {{ e.isBillable ? 'Yes' : 'No' }}
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div *ngIf="loading" class="empty" role="status" aria-live="polite">Loading time entries&hellip;</div>
+<div *ngIf="!loading && entries.length === 0" class="empty">No time entries found.</div>

@@ -1,0 +1,101 @@
+<div class="page-header">
+  <div>
+    <h2>Workflow Configuration</h2>
+    <div class="subtitle" *ngIf="projectName">{{ projectName }}</div>
+  </div>
+  <div class="header-actions">
+    <span class="source-badge" [class.custom]="isCustom">
+      {{ isCustom ? 'Project-specific' : 'Domain default' }}
+    </span>
+    <button class="btn-secondary" *ngIf="isCustom && canEdit" (click)="resetToDefault()" [disabled]="saving"
+            aria-label="Reset workflow to domain default">
+      Reset to Domain Default
+    </button>
+  </div>
+</div>
+
+<!-- Read-only banner for non-authorized users -->
+<div class="readonly-banner" *ngIf="!loading && !canEdit" role="alert">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  View-only mode &mdash; only project owners or admins can edit workflow configurations.
+</div>
+
+<div *ngIf="loading" class="loading" role="status" aria-live="polite">Loading workflow&hellip;</div>
+
+<ng-container *ngIf="!loading && states.length > 0">
+  <!-- States list -->
+  <div class="states-list" role="list" aria-label="Workflow states">
+    <div class="state-row" *ngFor="let s of states; let i = index" role="listitem">
+      <div class="state-order">
+        <button class="btn-reorder" (click)="moveUp(i)" [disabled]="!canEdit || i === 0" aria-label="Move up">&#9650;</button>
+        <span class="order-num">{{ s.order }}</span>
+        <button class="btn-reorder" (click)="moveDown(i)" [disabled]="!canEdit || i === states.length - 1" aria-label="Move down">&#9660;</button>
+      </div>
+      <input type="color" [(ngModel)]="s.color" class="color-picker" [disabled]="!canEdit" [attr.aria-label]="'Color for ' + s.name" />
+      <input type="text" [(ngModel)]="s.name" class="state-name-input" placeholder="State name" [readonly]="!canEdit" [attr.aria-label]="'Name for state ' + (i+1)" />
+      <label class="flag-label">
+        <input type="checkbox" [(ngModel)]="s.isInitial" (change)="onInitialChange(i)" [disabled]="!canEdit" />
+        Start
+      </label>
+      <label class="flag-label">
+        <input type="checkbox" [(ngModel)]="s.isFinal" [disabled]="!canEdit" />
+        Done
+      </label>
+      <button class="btn-icon-danger" (click)="removeState(i)" [disabled]="!canEdit || states.length <= 1"
+              [attr.aria-label]="'Remove state: ' + s.name" title="Remove">
+        &times;
+      </button>
+    </div>
+  </div>
+
+  <!-- Add state -->
+  <div class="add-state-row" *ngIf="canEdit">
+    <input type="text" [(ngModel)]="newStateName" placeholder="New state name" class="state-name-input"
+           (keydown.enter)="addState()" aria-label="New state name" />
+    <button class="btn-secondary" (click)="addState()" [disabled]="!newStateName.trim()" aria-label="Add state">
+      + Add State
+    </button>
+  </div>
+
+  <!-- Save -->
+  <div class="save-row">
+    <button class="btn-primary" (click)="save()" [disabled]="!canEdit || saving || states.length === 0"
+            [title]="canEdit ? '' : 'Only project owners or admins can save workflow changes'">
+      {{ saving ? 'Saving...' : 'Save Workflow' }}
+    </button>
+    <span class="save-hint" *ngIf="canEdit && !isCustom">Saving will create a project-specific workflow override.</span>
+    <span class="save-hint" *ngIf="!canEdit">Editing is restricted to project owners and admins.</span>
+  </div>
+</ng-container>
+
+<div *ngIf="!loading && states.length === 0" class="empty">
+  No workflow states configured.
+  <ng-container *ngIf="canEdit">
+    Add at least one state to get started.
+    <div class="add-state-row" style="margin-top: 1rem;">
+      <input type="text" [(ngModel)]="newStateName" placeholder="New state name" class="state-name-input"
+             (keydown.enter)="addState()" aria-label="New state name" />
+      <button class="btn-secondary" (click)="addState()" [disabled]="!newStateName.trim()">+ Add State</button>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!canEdit">
+    Only project owners or admins can configure workflow states.
+  </ng-container>
+</div>
+
+<div class="workflow-footer-options">
+  Need project funding?
+  <a class="credit-request-link"
+     (click)="requestCredit()"
+     (keydown.enter)="requestCredit()"
+     tabindex="0"
+     role="link"
+     aria-label="View credit request options (opens external finance system in new tab)">
+    <svg class="credit-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+    </svg>
+    View credit request options
+  </a>
+</div>

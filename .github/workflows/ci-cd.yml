@@ -34,6 +34,7 @@ jobs:
             --configuration Release \
             --no-build \
             --verbosity normal \
+            --filter "Category!=Integration" \
             --collect:"XPlat Code Coverage" \
             --results-directory ./coverage \
             /p:CoverletOutputFormat=cobertura \
@@ -57,9 +58,27 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage/reports/Cobertura.xml,./coverage/**/coverage.cobertura.xml
+          flags: backend
           fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Verify admin secrets are configured
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+          ADMIN_SALT: ${{ secrets.ADMIN_SALT }}
+        run: |
+          if [ -z "$ADMIN_USERNAME" ] || [ -z "$ADMIN_PASSWORD_HASH" ] || [ -z "$ADMIN_SALT" ]; then
+            echo "  WARNING: Missing admin secrets (ADMIN_USERNAME, ADMIN_PASSWORD_HASH, ADMIN_SALT)"
+            echo "App will start but no admin user will be created."
+            echo "To set admin credentials:"
+            echo "  1. Run: dotnet run --project tools/PasswordHashGenerator -- 'YourPassword'"
+            echo "  2. Add the 3 secrets to GitHub Settings → Secrets and variables → Actions"
+          else
+            echo " Admin secrets are configured - admin user will be created on app startup"
+          fi
 
       - name: Install Heroku CLI
         if: github.ref == 'refs/heads/main'
@@ -88,8 +107,21 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_BACKEND_APP: ${{ secrets.HEROKU_BACKEND_APP }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+          ADMIN_SALT: ${{ secrets.ADMIN_SALT }}
         run: |
           heroku container:release web --app ${HEROKU_BACKEND_APP}
+          # Set admin credentials if configured
+          if [ -n "$ADMIN_USERNAME" ] && [ -n "$ADMIN_PASSWORD_HASH" ] && [ -n "$ADMIN_SALT" ]; then
+            echo "Setting admin environment variables..."
+            heroku config:set \
+              ADMIN_USERNAME="$ADMIN_USERNAME" \
+              ADMIN_PASSWORD_HASH="$ADMIN_PASSWORD_HASH" \
+              ADMIN_SALT="$ADMIN_SALT" \
+              DEMO_SALT="demo-salt" \
+              --app ${HEROKU_BACKEND_APP}
+          fi
 
   frontend:
     runs-on: ubuntu-latest
@@ -98,6 +130,30 @@ jobs:
       url: https://app1.anubhavsharma.dev
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        working-directory: frontend
+        run: npx ng test --watch=false --no-progress --code-coverage --browsers=ChromeHeadless
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: frontend/coverage/cobertura-coverage.xml,frontend/coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq

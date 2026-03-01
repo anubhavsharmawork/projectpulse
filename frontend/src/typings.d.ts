@@ -1,0 +1,1 @@
+declare module '@angular/common/locales/en-GB';

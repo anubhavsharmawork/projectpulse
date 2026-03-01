@@ -1,0 +1,78 @@
+<h3>Categories &amp; Custom Fields</h3>
+    <p class="admin-subtitle">Browse project categories and domain-specific custom fields.</p>
+
+    <!-- Read-only banner for non-admin users -->
+    <div class="readonly-banner" *ngIf="!isAdmin">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      View-only mode — admin privileges required to modify.
+    </div>
+
+    <!-- Domain selector with domain-colored indicator -->
+    <div class="domain-selector">
+      <label for="cat-domain">Domain</label>
+      <select id="cat-domain" [(ngModel)]="selectedDomain" (ngModelChange)="onDomainChange()">
+        <option *ngFor="let d of domains" [value]="d">{{ d }}</option>
+      </select>
+      <span class="domain-indicator"
+            [style.background]="colors.badgeBg"
+            [style.color]="colors.badgeText"
+            [style.border-color]="colors.badgeBorder">
+        {{ selectedDomain }}
+      </span>
+    </div>
+
+    <!-- Categories info (read from seeded data, filtered by domain) -->
+    <div class="categories-section">
+      <h4>Domain Categories</h4>
+      <div class="category-cards" role="list">
+        <div class="cat-card" *ngFor="let c of categoriesForDomain" role="listitem"
+             [style.border-left-color]="colors.primary">
+          <div class="cat-name">{{ c.name }}</div>
+          <div class="cat-desc" *ngIf="c.description">{{ c.description }}</div>
+          <div class="cat-roles" *ngIf="c.roles.length > 0">
+            <span class="role-tag" *ngFor="let r of c.roles"
+                  [style.background]="colors.badgeBg"
+                  [style.color]="colors.badgeText">{{ r }}</span>
+          </div>
+        </div>
+        <div *ngIf="categoriesForDomain.length === 0" class="empty">No categories defined for this domain.</div>
+      </div>
+    </div>
+
+    <!-- Custom Fields table (filtered by selected domain via API) -->
+    <div class="fields-section">
+      <h4>Custom Fields</h4>
+      <div *ngIf="loadingFields" class="loading-text">Loading fields&hellip;</div>
+      <div *ngIf="fieldsError" class="error-text" role="alert">{{ fieldsError }}</div>
+      <table class="fields-table" *ngIf="!loadingFields && !fieldsError && fields.length > 0" aria-label="Custom fields">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Entity Type</th>
+            <th>Required</th>
+            <th>Options</th>
+            <th>Validation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of fields">
+            <td class="field-name">{{ f.name }}</td>
+            <td><span class="type-badge" [style.background]="colors.badgeBg" [style.color]="colors.badgeText">{{ f.fieldType }}</span></td>
+            <td><span class="entity-type-badge">{{ f.entityType || 'All' }}</span></td>
+            <td>
+              <span [class]="f.isRequired ? 'req-yes' : 'req-no'">
+                {{ f.isRequired ? 'Yes' : 'No' }}
+              </span>
+            </td>
+            <td class="options-cell" [title]="f.options || ''">{{ f.options || '—' }}</td>
+            <td class="options-cell" [title]="f.validationRule || ''">{{ f.validationRule || '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="!loadingFields && !fieldsError && fields.length === 0" class="empty">
+        No custom fields for <strong>{{ selectedDomain }}</strong>. Fields are seeded from domain templates.
+      </div>
+    </div>

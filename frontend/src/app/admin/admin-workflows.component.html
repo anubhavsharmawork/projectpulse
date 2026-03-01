@@ -1,0 +1,66 @@
+<h3>Workflow Configuration</h3>
+    <p class="admin-subtitle">View domain workflow definitions and their states.</p>
+
+    <!-- Read-only banner for non-admin users -->
+    <div class="readonly-banner" *ngIf="!isAdmin">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      View-only mode — admin privileges required to modify.
+    </div>
+
+    <div class="domain-selector">
+      <label for="wf-domain">Domain</label>
+      <select id="wf-domain" [(ngModel)]="selectedDomain" (ngModelChange)="onDomainChange()">
+        <option *ngFor="let d of domains" [value]="d">{{ d }}</option>
+      </select>
+      <span class="domain-indicator"
+            [style.background]="colors.badgeBg"
+            [style.color]="colors.badgeText"
+            [style.border-color]="colors.badgeBorder">
+        {{ selectedDomain }}
+      </span>
+    </div>
+
+    <div *ngIf="loading" class="loading-text">Loading workflow&hellip;</div>
+
+    <div *ngIf="workflow" class="workflow-view">
+      <div class="wf-header">
+        <span class="wf-name">{{ workflow.name }}</span>
+        <span class="wf-domain-badge"
+              [style.background]="colors.badgeBg"
+              [style.color]="colors.badgeText">{{ workflow.domainType }}</span>
+      </div>
+      <div class="states-pipeline" role="list" aria-label="Workflow states">
+        <div class="state-card" *ngFor="let s of workflow.states; let last = last"
+             role="listitem"
+             [style.border-left-color]="s.color">
+          <div class="state-header">
+            <span class="state-dot" [style.background]="s.color"></span>
+            <span class="state-name">{{ s.name }}</span>
+            <span class="state-tag initial" *ngIf="s.isInitial">START</span>
+            <span class="state-tag final" *ngIf="s.isFinal">DONE</span>
+          </div>
+          <div class="state-meta">
+            <span *ngIf="s.notifyOnEntry" class="meta-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+              </svg>
+              Notifies
+            </span>
+            <span *ngIf="s.requiredFields.length > 0" class="meta-item">
+              Required: {{ s.requiredFields.join(', ') }}
+            </span>
+          </div>
+          <div class="state-transitions" *ngIf="s.allowedTransitions.length > 0">
+            <span class="trans-label">Transitions to:</span>
+            <span class="trans-target" *ngFor="let tid of s.allowedTransitions">
+              {{ getStateName(tid) }}
+            </span>
+          </div>
+          <div class="state-arrow" *ngIf="!last" aria-hidden="true">&rarr;</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && !workflow" class="empty">No workflow defined for this domain.</div>

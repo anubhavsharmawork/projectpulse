@@ -14,6 +14,8 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers
 {
+    // NOTE: Integration tests — exclude with: dotnet test --filter "Category!=Integration"
+    [Trait("Category", "Integration")]
     public class MentionNotificationsControllerTests : IClassFixture<TestWebApplicationFactory>
     {
         private readonly TestWebApplicationFactory _factory;

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { WorkItemsComponent } from './work-items.component';
 import { CommentsModule } from '../comments/comments.module';
+import { SharedModule } from '../shared/shared.module';
 
 const routes: Routes = [
   { path: '', component: WorkItemsComponent }
@@ -15,7 +16,8 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     RouterModule.forChild(routes),
-    CommentsModule
+    CommentsModule,
+    SharedModule
   ]
 })
 export class WorkItemsModule {}

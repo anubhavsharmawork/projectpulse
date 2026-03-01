@@ -33,7 +33,9 @@ namespace API.Controllers
                     w.AssigneeId,
                     w.CreatedAt,
                     w.CompletedAt,
-                    w.Type
+                    w.Type,
+                    CurrentStateName = w.CurrentState != null ? w.CurrentState.Name : null,
+                    CurrentStateColor = w.CurrentState != null ? w.CurrentState.Color : null
                 })
                 .ToListAsync());
 
@@ -53,7 +55,9 @@ namespace API.Controllers
                     w.IsCompleted,
                     w.AssigneeId,
                     w.CreatedAt,
-                    w.CompletedAt
+                    w.CompletedAt,
+                    CurrentStateName = w.CurrentState != null ? w.CurrentState.Name : null,
+                    CurrentStateColor = w.CurrentState != null ? w.CurrentState.Color : null
                 })
                 .ToListAsync());
 
@@ -74,7 +78,9 @@ namespace API.Controllers
                     w.IsCompleted,
                     w.AssigneeId,
                     w.CreatedAt,
-                    w.CompletedAt
+                    w.CompletedAt,
+                    CurrentStateName = w.CurrentState != null ? w.CurrentState.Name : null,
+                    CurrentStateColor = w.CurrentState != null ? w.CurrentState.Color : null
                 })
                 .ToListAsync());
 
@@ -96,7 +102,9 @@ namespace API.Controllers
                     t.AssigneeId,
                     t.CreatedAt,
                     t.CompletedAt,
-                    t.Type
+                    t.Type,
+                    CurrentStateName = t.CurrentState != null ? t.CurrentState.Name : null,
+                    CurrentStateColor = t.CurrentState != null ? t.CurrentState.Color : null
                 })
                 .ToListAsync());
 
@@ -139,7 +147,9 @@ namespace API.Controllers
                     w.AssigneeId,
                     w.CreatedAt,
                     w.CompletedAt,
-                    w.Type
+                    w.Type,
+                    CurrentStateName = w.CurrentState != null ? w.CurrentState.Name : null,
+                    CurrentStateColor = w.CurrentState != null ? w.CurrentState.Color : null
                 })
                 .FirstOrDefaultAsync();
             return item == null ? NotFound() : Ok(item);
@@ -158,9 +168,50 @@ namespace API.Controllers
                     w.Title,
                     w.Description,
                     w.IsCompleted,
-                    w.Type
+                    w.Type,
+                    CurrentStateName = w.CurrentState != null ? w.CurrentState.Name : null,
+                    CurrentStateColor = w.CurrentState != null ? w.CurrentState.Color : null
                 })
                 .ToListAsync());
+
+        [HttpGet("bugs")]
+        public async Task<IActionResult> GetBugs(Guid projectId, [FromServices] AppDbContext db)
+            => Ok(await db.WorkItems
+                .OfType<BugWorkItem>()
+                .AsNoTracking()
+                .Where(w => w.ProjectId == projectId)
+                .Select(w => new
+                {
+                    w.Id,
+                    w.ProjectId,
+                    w.ParentId,
+                    w.Title,
+                    w.Description,
+                    w.IsCompleted,
+                    w.AssigneeId,
+                    w.CreatedAt,
+                    w.CompletedAt,
+                    w.Severity,
+                    w.StepsToReproduce,
+                    w.ExpectedBehavior,
+                    w.ActualBehavior,
+                    w.Environment,
+                    CurrentStateName = w.CurrentState != null ? w.CurrentState.Name : null,
+                    CurrentStateColor = w.CurrentState != null ? w.CurrentState.Color : null
+                })
+                .ToListAsync());
+
+        [HttpPost("bugs")]
+        public async Task<IActionResult> CreateBug(Guid projectId, CreateBugCommand cmd, [FromServices] IMediator mediator, [FromServices] AppDbContext db)
+        {
+            var project = await db.Projects.AsNoTracking().FirstOrDefaultAsync(p => p.Id == projectId);
+            if (project is null) return NotFound();
+            if (project.DomainType != Domain.Enums.DomainType.IT && project.DomainType != Domain.Enums.DomainType.Technology)
+                return BadRequest(new { title = "Bad Request", detail = "Bugs can only be created for IT or Technology domain projects" });
+
+            cmd = cmd with { ProjectId = projectId };
+            return Ok(await mediator.Send(cmd));
+        }
 
         [HttpDelete("{workItemId:guid}")]
         public async Task<IActionResult> Delete(Guid projectId, Guid workItemId, [FromServices] AppDbContext db)

@@ -1,0 +1,49 @@
+{
+  "domainType": "Technology",
+  "categories": [
+    {
+      "name": "Digital Services Platform",
+      "description": "Epic: Digital services platform for citizen engagement",
+      "defaultTeamRoles": [
+        { "role": "Product Owner", "description": "Defines product vision and backlog" },
+        { "role": "Business Analyst", "description": "Requirements gathering and analysis" },
+        { "role": "Solution Architect", "description": "System architecture and design" },
+        { "role": "Full-Stack Dev", "description": "Full-stack application development" },
+        { "role": "QA Engineer", "description": "Quality assurance and test automation" },
+        { "role": "UX Designer", "description": "User experience research and design" },
+        { "role": "Scrum Master", "description": "Agile process facilitation" }
+      ]
+    },
+    {
+      "name": "Data & Automation",
+      "description": "Epic: Data analytics and process automation",
+      "defaultTeamRoles": [
+        { "role": "Data Engineer", "description": "Data pipeline and infrastructure" },
+        { "role": "Data Analyst", "description": "Data analysis and visualization" },
+        { "role": "IoT Specialist", "description": "IoT sensor integration and management" },
+        { "role": "Backend Dev", "description": "Backend services and API development" },
+        { "role": "DevOps Engineer", "description": "CI/CD and infrastructure automation" }
+      ]
+    },
+    {
+      "name": "Cybersecurity & Governance",
+      "description": "Security posture and IT governance programs",
+      "defaultTeamRoles": [
+        { "role": "Security Architect", "description": "Security architecture and strategy" },
+        { "role": "Cybersecurity Analyst", "description": "Threat analysis and incident response" },
+        { "role": "Compliance Officer", "description": "IT compliance and audit management" },
+        { "role": "IT Admin", "description": "IT administration and access management" }
+      ]
+    },
+    {
+      "name": "Cloud & Infrastructure Modernization",
+      "description": "Cloud migration and infrastructure modernization",
+      "defaultTeamRoles": [
+        { "role": "Cloud Architect", "description": "Cloud strategy and architecture" },
+        { "role": "DevOps Engineer", "description": "Infrastructure as code and automation" },
+        { "role": "SysAdmin", "description": "Systems administration and monitoring" },
+        { "role": "Network Engineer", "description": "Network design and optimization" }
+      ]
+    }
+  ]
+}

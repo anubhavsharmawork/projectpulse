@@ -1,0 +1,76 @@
+{
+  "name": "Technology Workflow",
+  "domainType": "Technology",
+  "states": [
+    {
+      "name": "Discovery",
+      "order": 1,
+      "color": "#6B7280",
+      "isInitial": true,
+      "isFinal": false,
+      "allowedTransitions": ["Design", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": false
+    },
+    {
+      "name": "Design",
+      "order": 2,
+      "color": "#8B5CF6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Development", "Discovery", "Blocked"],
+      "requiredFields": ["AcceptanceCriteria"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Development",
+      "order": 3,
+      "color": "#3B82F6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Testing", "Design", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Testing",
+      "order": 4,
+      "color": "#F59E0B",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Deployment", "Development", "Blocked"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Deployment",
+      "order": 5,
+      "color": "#EC4899",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Released", "Testing"],
+      "requiredFields": ["DeploymentEnvironment", "ReleaseVersion"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Released",
+      "order": 6,
+      "color": "#22C55E",
+      "isInitial": false,
+      "isFinal": true,
+      "allowedTransitions": [],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Blocked",
+      "order": 7,
+      "color": "#EF4444",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Discovery", "Design", "Development", "Testing"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    }
+  ]
+}

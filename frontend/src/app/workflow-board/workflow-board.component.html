@@ -1,0 +1,69 @@
+<div class="page-header">
+  <div>
+    <h2>Workflow Board</h2>
+    <div class="subtitle">
+      Visualize work items by workflow state
+      <span class="domain-badge" *ngIf="workflow"
+            [style.background]="colors.badgeBg"
+            [style.color]="colors.badgeText">{{ workflow.domainType }}</span>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading" role="status" aria-live="polite">Loading board&hellip;</div>
+
+<div class="board-scroll" *ngIf="!loading && columns.length > 0">
+  <div class="board" role="region" aria-label="Workflow board">
+    <div class="column" *ngFor="let col of columns" [attr.aria-label]="col.state.name + ' column, ' + col.items.length + ' items'">
+      <div class="column-header">
+        <span class="column-title">
+          <span class="column-dot" [style.background]="col.state.color" aria-hidden="true"></span>
+          {{ col.state.name }}
+          <span class="state-marker marker-initial" *ngIf="col.state.isInitial">START</span>
+          <span class="state-marker marker-final" *ngIf="col.state.isFinal">DONE</span>
+        </span>
+        <span class="column-count">{{ col.items.length }}</span>
+      </div>
+      <div class="column-body" role="list" [attr.aria-label]="'Work items in ' + col.state.name">
+        <div class="board-card" *ngFor="let item of col.items"
+             role="listitem"
+             [attr.aria-label]="typeName(item) + ': ' + item.title"
+             (mouseenter)="loadTransitions(item.id)"
+             (focusin)="loadTransitions(item.id)"
+             tabindex="0">
+          <span class="card-type" [class]="typeClass(item)"
+                [style.background]="typeBadgeBg(item)"
+                [style.color]="typeBadgeText(item)">{{ typeName(item) }}</span>
+          <div class="card-title">{{ item.title }}</div>
+          <div class="card-desc" *ngIf="item.description">{{ item.description }}</div>
+          <div class="card-footer">
+            <span class="card-assignee" *ngIf="item.assigneeId">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              Assigned
+            </span>
+            <span class="card-assignee" *ngIf="!item.assigneeId" style="opacity: 0.5;">Unassigned</span>
+            <div class="card-transitions" *ngIf="itemTransitions[item.id]">
+              <button class="move-btn" *ngFor="let t of itemTransitions[item.id]"
+                      (click)="moveItem(item.id, t)"
+                      [disabled]="transitioning[item.id]"
+                      [attr.aria-label]="transitionBtnLabel(t)">
+                &rarr; {{ t.stateName }}
+                <span class="required-dot" *ngIf="t.requiredFields && t.requiredFields.length > 0" aria-hidden="true">&#9679;</span>
+              </button>
+            </div>
+          </div>
+          <div class="card-error" *ngIf="transitionErrors[item.id]" role="alert" aria-live="assertive">
+            {{ transitionErrors[item.id] }}
+          </div>
+        </div>
+        <div class="empty-column" *ngIf="col.items.length === 0">No items</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!loading && columns.length === 0" class="empty-board">
+  No workflow defined or no work items in this project.
+</div>

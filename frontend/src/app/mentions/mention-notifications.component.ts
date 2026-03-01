@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, Inject, LOCALE_ID } from '@angular/core';
+import { formatDate } from '@angular/common';
 import { Router } from '@angular/router';
 import { MentionNotificationsService, MentionNotificationDto } from './mention-notifications.service';
 import { Subscription } from 'rxjs';
@@ -137,7 +138,8 @@ export class MentionNotificationsComponent implements OnInit, OnDestroy {
   constructor(
     private svc: MentionNotificationsService,
     private router: Router,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    @Inject(LOCALE_ID) private locale: string
   ) {}
 
   ngOnInit() {
@@ -198,6 +200,6 @@ export class MentionNotificationsComponent implements OnInit, OnDestroy {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    return formatDate(date, 'mediumDate', this.locale);
   }
 }

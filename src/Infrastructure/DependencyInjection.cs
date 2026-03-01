@@ -1,8 +1,13 @@
 using Application.Common.Interfaces;
+using Domain.Entities;
 using Infrastructure.Persistence;
+using Infrastructure.Security;
+using Infrastructure.Services;
+using Infrastructure.Workflows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Infrastructure
@@ -15,35 +20,62 @@ namespace Infrastructure
             // Configure Npgsql timestamp behavior for consistency
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-            services.AddDbContext<AppDbContext>(options =>
+            // Register tenant service (must be before DbContext since AppDbContext depends on it)
+            services.AddScoped<ITenantService, TenantService>();
+
+            // Register field-level encryption service (singleton — key is immutable per deployment)
+            services.AddSingleton<IEncryptionService, AesFieldEncryptionService>();
+
+            // Register audit interceptor (needs IHttpContextAccessor, so register as scoped)
+            services.AddScoped<AuditInterceptor>();
+
+            services.AddDbContext<AppDbContext>((sp, options) =>
             {
-                // Use Heroku DATABASE_URL if available, otherwise fall back to connection string
-                var databaseUrl = configuration["DATABASE_URL"] ?? Environment.GetEnvironmentVariable("DATABASE_URL");
-                string? conn = null;
-                if (!string.IsNullOrWhiteSpace(databaseUrl))
-                {
-                    conn = ConvertDatabaseUrlToNpgsql(databaseUrl!);
-                }
-                else
-                {
-                    conn = configuration.GetConnectionString("Default");
-                }
+                var conn = ResolveConnectionString(configuration);
 
                 options.UseNpgsql(conn, npgsql =>
                 {
                     // Set migrations assembly to Infrastructure project
                     npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name);
                 });
+
+                // Add audit interceptor
+                options.AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
             });
 
             // Register application database context interface
             services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
+            // Register generic repository and unit of work
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             // Register JWT and storage services
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IStorageService, S3StorageService>();
 
+            // Register workflow engine
+            services.AddScoped<IWorkflowEngine, WorkflowEngine>();
+
+            // Register feedback processor
+            services.AddScoped<IFeedbackProcessor, FeedbackProcessor>();
+
+            // Database seeders run as a background service so that Kestrel binds to
+            // $PORT immediately and Heroku's boot-timeout is never exceeded.
+            services.AddHostedService<DatabaseSeederHostedService>();
+
             return services;
+        }
+
+        /// <summary>
+        /// Resolve the Npgsql connection string from Heroku DATABASE_URL or appsettings.
+        /// </summary>
+        public static string? ResolveConnectionString(IConfiguration configuration)
+        {
+            var databaseUrl = configuration["DATABASE_URL"] ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+            if (!string.IsNullOrWhiteSpace(databaseUrl))
+                return ConvertDatabaseUrlToNpgsql(databaseUrl!);
+            return configuration.GetConnectionString("Default");
         }
 
         private static string ConvertDatabaseUrlToNpgsql(string databaseUrl)

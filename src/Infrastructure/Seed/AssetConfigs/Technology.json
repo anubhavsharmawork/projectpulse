@@ -1,0 +1,123 @@
+[
+  {
+    "assetType": "DevWorkstation",
+    "category": "Physical",
+    "displayLabel": "Development Workstation",
+    "description": "High-spec desktops or laptops for software development, ML training, or design",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 4,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Full-disk encryption; MDM-enrolled; remote-wipe capability",
+    "sortOrder": 1
+  },
+  {
+    "assetType": "TestDevice",
+    "category": "Physical",
+    "displayLabel": "Test Device",
+    "description": "Smartphones, tablets, and IoT boards for QA and compatibility testing",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Factory-reset between test cycles; track OS version matrix",
+    "sortOrder": 2
+  },
+  {
+    "assetType": "ServerRack",
+    "category": "Physical",
+    "displayLabel": "Server Rack / Cabinet",
+    "description": "Data-centre or on-prem rack infrastructure including UPS, PDUs, and cooling",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "UPS battery test semi-annually; thermal monitoring; cable-management audit",
+    "sortOrder": 3
+  },
+  {
+    "assetType": "Server",
+    "category": "Physical",
+    "displayLabel": "Server",
+    "description": "Bare-metal or virtualisation-host servers",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Firmware patching per vendor schedule; decommission per data-destruction policy",
+    "sortOrder": 4
+  },
+  {
+    "assetType": "SoftwareLicense",
+    "category": "License",
+    "displayLabel": "Software License",
+    "description": "IDE, CI/CD, design tools, and collaboration platform licences",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Seat-count compliance; remove access on offboarding",
+    "sortOrder": 5
+  },
+  {
+    "assetType": "CloudSubscription",
+    "category": "Digital",
+    "displayLabel": "Cloud Subscription",
+    "description": "AWS, Azure, GCP, and SaaS platform subscriptions",
+    "defaultDepreciationMethod": "NoDepreciation",
+    "defaultUsefulLifeYears": 1,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Tag resources for cost allocation; quarterly access review; budget alerts configured",
+    "sortOrder": 6
+  },
+  {
+    "assetType": "PrototypingEquipment",
+    "category": "Physical",
+    "displayLabel": "Prototyping Equipment",
+    "description": "3D printers, CNC routers, laser cutters, and PCB mills",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Ventilation and material-safety requirements; calibration per manufacturer spec",
+    "sortOrder": 7
+  },
+  {
+    "assetType": "ARVRHeadset",
+    "category": "Physical",
+    "displayLabel": "AR / VR Headset",
+    "description": "Mixed-reality headsets for development, testing, or design review",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Hygiene cleaning protocol between users; firmware-update tracking",
+    "sortOrder": 8
+  },
+  {
+    "assetType": "RoboticSystem",
+    "category": "Physical",
+    "displayLabel": "Robotic System",
+    "description": "Industrial or collaborative robots for manufacturing, logistics, or R&D",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 8,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "ISO 10218 / ISO 15066 safety compliance; risk assessment per cell change",
+    "sortOrder": 9
+  },
+  {
+    "assetType": "ThreeDPrinter",
+    "category": "Physical",
+    "displayLabel": "3D Printer",
+    "description": "FDM, SLA, SLS, and metal additive-manufacturing printers",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Material-safety data sheets on file; ventilation per printer type",
+    "sortOrder": 10
+  },
+  {
+    "assetType": "NetworkSwitch",
+    "category": "Physical",
+    "displayLabel": "Network Switch",
+    "description": "Lab and office network switching infrastructure",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Firmware updates per vendor advisory schedule",
+    "sortOrder": 11
+  }
+]

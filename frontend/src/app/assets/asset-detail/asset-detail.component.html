@@ -1,0 +1,164 @@
+<div *ngIf="asset" class="asset-detail">
+      <div class="detail-header">
+        <button class="btn-back" (click)="goBack()">← Back to Assets</button>
+        <div class="header-actions">
+          <button class="btn-action" (click)="edit()">Edit</button>
+          <button class="btn-action btn-assign" *ngIf="!asset.assignedToUserId" (click)="showAssignModal = true">Assign</button>
+          <button class="btn-action btn-return" *ngIf="asset.assignedToUserId" (click)="showReturnModal = true">Return</button>
+          <button class="btn-action btn-maint" (click)="showMaintenanceModal = true">Schedule Maintenance</button>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-row">
+          <div class="info-group">
+            <label>Asset Tag</label>
+            <span class="tag-value">{{asset.assetTag}}</span>
+          </div>
+          <div class="info-group">
+            <label>Name</label>
+            <span>{{asset.name}}</span>
+          </div>
+          <div class="info-group">
+            <label>Type</label>
+            <span>{{formatType(asset.type)}}</span>
+          </div>
+          <div class="info-group">
+            <label>Status</label>
+            <span class="status-badge" [style.background]="getStatusColor(asset.status) + '20'" [style.color]="getStatusColor(asset.status)">
+              {{formatStatus(asset.status)}}
+            </span>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-group"><label>Location</label><span>{{asset.location}}</span></div>
+          <div class="info-group"><label>Assigned To</label><span>{{asset.assignedToUserName || 'Unassigned'}}</span></div>
+          <div class="info-group"><label>Purchase Date</label><span>{{asset.purchaseDate | date:'mediumDate'}}</span></div>
+          <div class="info-group"><label>Purchase Price</label><span>\${{asset.purchasePrice | number:'1.2-2'}}</span></div>
+        </div>
+        <div class="info-row">
+          <div class="info-group"><label>Current Value</label><span>\${{asset.currentValue | number:'1.2-2'}}</span></div>
+          <div class="info-group"><label>Serial Number</label><span>{{asset.serialNumber || '—'}}</span></div>
+          <div class="info-group"><label>Manufacturer</label><span>{{asset.manufacturer || '—'}}</span></div>
+          <div class="info-group"><label>Model</label><span>{{asset.model || '—'}}</span></div>
+        </div>
+        <div class="info-row" *ngIf="asset.description">
+          <div class="info-group full-width"><label>Description</label><span>{{asset.description}}</span></div>
+        </div>
+        <div class="info-row" *ngIf="asset.notes">
+          <div class="info-group full-width"><label>Notes</label><span>{{asset.notes}}</span></div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button [class.active]="activeTab === 'maintenance'" (click)="activeTab = 'maintenance'">Maintenance</button>
+        <button [class.active]="activeTab === 'checkouts'" (click)="activeTab = 'checkouts'; loadCheckouts()">Assignments</button>
+        <button [class.active]="activeTab === 'history'" (click)="activeTab = 'history'; loadHistory()">History</button>
+      </div>
+
+      <div *ngIf="activeTab === 'maintenance'" class="tab-content">
+        <table *ngIf="maintenanceRecords.length > 0">
+          <thead><tr><th>Type</th><th>Scheduled</th><th>Completed</th><th>Description</th><th>Cost</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let m of maintenanceRecords">
+              <td>{{m.maintenanceType}}</td>
+              <td>{{m.scheduledDate | date:'mediumDate'}}</td>
+              <td>{{m.completedDate ? (m.completedDate | date:'mediumDate') : 'Pending'}}</td>
+              <td>{{m.description}}</td>
+              <td>\${{m.cost | number:'1.2-2'}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="maintenanceRecords.length === 0" class="empty-tab">No maintenance records.</p>
+      </div>
+
+      <div *ngIf="activeTab === 'checkouts'" class="tab-content">
+        <table *ngIf="checkouts.length > 0">
+          <thead><tr><th>User</th><th>Checked Out</th><th>Expected Return</th><th>Returned</th><th>Condition</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of checkouts">
+              <td>{{c.checkedOutToUserName || c.checkedOutToUserId}}</td>
+              <td>{{c.checkedOutAt | date:'mediumDate'}}</td>
+              <td>{{c.expectedReturnDate ? (c.expectedReturnDate | date:'mediumDate') : '—'}}</td>
+              <td>{{c.actualReturnDate ? (c.actualReturnDate | date:'mediumDate') : 'Active'}}</td>
+              <td>{{c.condition}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="checkouts.length === 0" class="empty-tab">No assignment history.</p>
+      </div>
+
+      <div *ngIf="activeTab === 'history'" class="tab-content">
+        <div *ngIf="history.length > 0" class="history-list">
+          <div *ngFor="let h of history" class="history-item">
+            <div class="history-type">{{formatChangeType(h.changeType)}}</div>
+            <div class="history-detail">
+              <span *ngIf="h.oldValue">{{h.oldValue}} →</span> {{h.newValue || '—'}}
+              <span *ngIf="h.reason" class="history-reason">— {{h.reason}}</span>
+            </div>
+            <div class="history-meta">{{h.changedAt | date:'medium'}} by {{h.changedBy}}</div>
+          </div>
+        </div>
+        <p *ngIf="history.length === 0" class="empty-tab">No history entries.</p>
+      </div>
+    </div>
+
+    <!-- Assign Modal -->
+    <div class="modal-overlay" *ngIf="showAssignModal" (click)="showAssignModal = false">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3>Assign Asset</h3>
+        <div class="form-group"><label>User ID</label><input [(ngModel)]="assignUserId" placeholder="Enter user ID"></div>
+        <div class="form-group"><label>Expected Return Date</label><input type="date" [(ngModel)]="assignReturnDate"></div>
+        <div class="form-group"><label>Notes</label><textarea [(ngModel)]="assignNotes"></textarea></div>
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="assign()" [disabled]="!assignUserId">Assign</button>
+          <button class="btn-cancel" (click)="showAssignModal = false">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Return Modal -->
+    <div class="modal-overlay" *ngIf="showReturnModal" (click)="showReturnModal = false">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3>Return Asset</h3>
+        <div class="form-group">
+          <label>Condition</label>
+          <select [(ngModel)]="returnCondition">
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
+            <option value="Damaged">Damaged</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea [(ngModel)]="returnNotes"></textarea></div>
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="returnAsset()">Return</button>
+          <button class="btn-cancel" (click)="showReturnModal = false">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maintenance Modal -->
+    <div class="modal-overlay" *ngIf="showMaintenanceModal" (click)="showMaintenanceModal = false">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3>Schedule Maintenance</h3>
+        <div class="form-group">
+          <label>Type</label>
+          <select [(ngModel)]="maintType">
+            <option [ngValue]="1">Preventive</option>
+            <option [ngValue]="2">Corrective</option>
+            <option [ngValue]="3">Inspection</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Scheduled Date</label><input type="date" [(ngModel)]="maintDate"></div>
+        <div class="form-group"><label>Description</label><textarea [(ngModel)]="maintDescription"></textarea></div>
+        <div class="form-group"><label>Estimated Cost</label><input type="number" [(ngModel)]="maintCost" min="0" step="0.01"></div>
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="scheduleMaintenance()" [disabled]="!maintDate || !maintDescription">Schedule</button>
+          <button class="btn-cancel" (click)="showMaintenanceModal = false">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!asset && !loading" class="empty-state">Asset not found.</div>
+    <div *ngIf="loading" class="loading">Loading asset details...</div>

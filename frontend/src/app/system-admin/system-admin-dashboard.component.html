@@ -1,0 +1,88 @@
+<div class="sa-dashboard">
+      <div class="demo-banner" *ngIf="isDemoUser">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        Read-Only Mode: You are logged in as a demo user. All modification actions are disabled.
+      </div>
+
+      <div class="sa-header">
+        <h2>System Administration</h2>
+        <button class="sa-create-btn" routerLink="create-tenant" [title]="isDemoUser ? 'Preview the tenant creation form (read-only)' : 'Create a new tenant'">
+          + New Tenant
+        </button>
+      </div>
+
+      <div class="sa-stats" *ngIf="tenants.length">
+        <div class="stat-card">
+          <span class="stat-value">{{ tenants.length }}</span>
+          <span class="stat-label">Total Tenants</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ activeTenants }}</span>
+          <span class="stat-label">Active</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ suspendedTenants }}</span>
+          <span class="stat-label">Suspended</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value stat-enterprise">{{ enterpriseTenants }}</span>
+          <span class="stat-label">Enterprise</span>
+        </div>
+      </div>
+
+      <div class="sa-filter">
+        <input class="sa-search" [(ngModel)]="searchTerm" placeholder="Search tenants..." />
+        <select class="sa-tier-filter" [(ngModel)]="tierFilter">
+          <option value="">All Tiers</option>
+          <option value="Starter">Starter</option>
+          <option value="Business">Business</option>
+          <option value="Enterprise">Enterprise</option>
+        </select>
+      </div>
+
+      <div class="sa-table-wrap">
+        <table class="sa-table" *ngIf="filteredTenants.length">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Subdomain</th>
+              <th>Tier</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of filteredTenants" [class.suspended-row]="!t.isActive">
+              <td class="tenant-name">{{ t.name }}</td>
+              <td class="tenant-subdomain">{{ t.subdomain }}</td>
+              <td>
+                <span class="tier-badge" [class]="'tier-' + t.tier.toLowerCase()">{{ t.tier }}</span>
+              </td>
+              <td>
+                <span class="status-badge" [class.active]="t.isActive" [class.suspended]="!t.isActive">
+                  {{ t.isActive ? 'Active' : 'Suspended' }}
+                </span>
+              </td>
+              <td class="date-cell">{{ t.createdAt | date:'mediumDate' }}</td>
+              <td class="actions-cell">
+                <button class="action-btn"
+                        (click)="toggleStatus(t)"
+                        [class.suspend]="t.isActive && !isDemoUser"
+                        [class.activate]="!t.isActive && !isDemoUser"
+                        [disabled]="isDemoUser"
+                        [title]="isDemoUser ? 'Demo users have read-only access' : (t.isActive ? 'Suspend this tenant' : 'Activate this tenant')">
+                  {{ t.isActive ? 'Suspend' : 'Activate' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="!filteredTenants.length && !loading" class="sa-empty">No tenants found.</div>
+      </div>
+
+      <div *ngIf="loading" class="sa-loading">Loading tenants...</div>
+      <div *ngIf="error" class="sa-error">{{ error }}</div>
+    </div>

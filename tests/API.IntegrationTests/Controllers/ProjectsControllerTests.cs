@@ -9,6 +9,8 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers
 {
+    // NOTE: Integration tests — exclude with: dotnet test --filter "Category!=Integration"
+    [Trait("Category", "Integration")]
     public class ProjectsControllerTests : IClassFixture<TestWebApplicationFactory>
     {
         private readonly TestWebApplicationFactory _factory;
@@ -59,7 +61,8 @@ namespace API.IntegrationTests.Controllers
             var response = await client.PostAsJsonAsync("/api/v1/projects", new
             {
                 Name = "Test Project",
-                Description = "Test Description"
+                Description = "Test Description",
+                IsPublic = false
             });
 
             // Assert
@@ -140,6 +143,75 @@ namespace API.IntegrationTests.Controllers
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Fact]
+        public async Task Create_PublicProject_ShouldBeVisibleOnPublicEndpoint()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var token = await TestHelpers.GetAuthTokenAsync(client, $"pub_proj_{Guid.NewGuid()}@test.com");
+            TestHelpers.SetAuthToken(client, token);
+
+            await client.PostAsJsonAsync("/api/v1/projects", new
+            {
+                Name = "Public Project",
+                IsPublic = true
+            });
+
+            // Act
+            var response = await client.GetAsync("/api/v1/projects/public");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Public Project");
+        }
+
+        [Fact]
+        public async Task GetMine_ShouldReturnOnlyOwnProjects()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var token = await TestHelpers.GetAuthTokenAsync(client, $"mine_proj_{Guid.NewGuid()}@test.com");
+            TestHelpers.SetAuthToken(client, token);
+
+            await client.PostAsJsonAsync("/api/v1/projects", new
+            {
+                Name = "My Private Project",
+                IsPublic = false
+            });
+
+            // Act
+            var response = await client.GetAsync("/api/v1/projects/mine");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("My Private Project");
+        }
+
+        [Fact]
+        public async Task GetAll_ShouldReturnPublicAndOwnProjects()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var token = await TestHelpers.GetAuthTokenAsync(client, $"all_proj_{Guid.NewGuid()}@test.com");
+            TestHelpers.SetAuthToken(client, token);
+
+            await client.PostAsJsonAsync("/api/v1/projects", new
+            {
+                Name = "My Visible Project",
+                IsPublic = false
+            });
+
+            // Act
+            var response = await client.GetAsync("/api/v1/projects");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("My Visible Project");
         }
 
         private class CreateProjectResult

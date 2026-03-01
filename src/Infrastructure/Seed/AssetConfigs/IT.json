@@ -1,0 +1,134 @@
+[
+  {
+    "assetType": "Server",
+    "category": "Physical",
+    "displayLabel": "Server",
+    "description": "Rack-mount or tower server for application hosting, databases, or virtualisation",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Follow ISO 27001 asset inventory controls; dispose per e-waste regulations",
+    "sortOrder": 1
+  },
+  {
+    "assetType": "Laptop",
+    "category": "Physical",
+    "displayLabel": "Laptop",
+    "description": "Portable workstation assigned to individual users",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 4,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Encrypt storage; track via MDM; wipe before disposal",
+    "sortOrder": 2
+  },
+  {
+    "assetType": "Desktop",
+    "category": "Physical",
+    "displayLabel": "Desktop",
+    "description": "Stationary workstation for office or lab use",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": null,
+    "sortOrder": 3
+  },
+  {
+    "assetType": "Monitor",
+    "category": "Physical",
+    "displayLabel": "Monitor",
+    "description": "Display screen for desktop or conference rooms",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": null,
+    "sortOrder": 4
+  },
+  {
+    "assetType": "NetworkSwitch",
+    "category": "Physical",
+    "displayLabel": "Network Switch",
+    "description": "Managed or unmanaged Ethernet switch for LAN connectivity",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Firmware updates per vendor advisory schedule",
+    "sortOrder": 5
+  },
+  {
+    "assetType": "Router",
+    "category": "Physical",
+    "displayLabel": "Router",
+    "description": "Network router for WAN/LAN traffic routing",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Firmware updates; access control list reviews quarterly",
+    "sortOrder": 6
+  },
+  {
+    "assetType": "Firewall",
+    "category": "Physical",
+    "displayLabel": "Firewall Appliance",
+    "description": "Hardware firewall/UTM device for network perimeter security",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Annual penetration test; signature updates weekly; PCI-DSS compliance if applicable",
+    "sortOrder": 7
+  },
+  {
+    "assetType": "MobileDevice",
+    "category": "Physical",
+    "displayLabel": "Mobile Device",
+    "description": "Smartphone or tablet managed via MDM",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "MDM-enrolled; remote wipe capability required",
+    "sortOrder": 8
+  },
+  {
+    "assetType": "Printer",
+    "category": "Physical",
+    "displayLabel": "Printer / MFD",
+    "description": "Network printer or multi-function device",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": null,
+    "sortOrder": 9
+  },
+  {
+    "assetType": "SoftwareLicense",
+    "category": "License",
+    "displayLabel": "Software License",
+    "description": "Perpetual or subscription software entitlement",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 3,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Track seat count vs active users; audit annually for compliance",
+    "sortOrder": 10
+  },
+  {
+    "assetType": "CloudSubscription",
+    "category": "Digital",
+    "displayLabel": "Cloud Subscription",
+    "description": "SaaS, IaaS, or PaaS subscription (e.g. Azure, AWS, M365)",
+    "defaultDepreciationMethod": "NoDepreciation",
+    "defaultUsefulLifeYears": 1,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": "Review consumption and access quarterly; tag resources for cost allocation",
+    "sortOrder": 11
+  },
+  {
+    "assetType": "Furniture",
+    "category": "Physical",
+    "displayLabel": "Office Furniture",
+    "description": "Desks, chairs, whiteboards, and office fixtures",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": null,
+    "complianceNotes": null,
+    "sortOrder": 12
+  }
+]

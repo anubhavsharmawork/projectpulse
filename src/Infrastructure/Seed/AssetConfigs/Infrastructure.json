@@ -1,0 +1,134 @@
+[
+  {
+    "assetType": "Transformer",
+    "category": "Infrastructure",
+    "displayLabel": "Transformer",
+    "description": "Power distribution and transmission transformers (pole-mount, pad-mount, substation)",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 30,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Dissolved-gas analysis annually; oil sampling per IEC 60599; PCB compliance",
+    "sortOrder": 1
+  },
+  {
+    "assetType": "PowerLine",
+    "category": "Infrastructure",
+    "displayLabel": "Power Line / Conductor",
+    "description": "Overhead and underground power-line segments including poles and cables",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 40,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Vegetation-management clearance; thermal imaging inspection cycle",
+    "sortOrder": 2
+  },
+  {
+    "assetType": "SmartMeter",
+    "category": "Infrastructure",
+    "displayLabel": "Smart Meter",
+    "description": "Advanced metering infrastructure (AMI) devices for electricity, gas, or water",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 15,
+    "defaultMaintenanceIntervalDays": 730,
+    "complianceNotes": "Requires annual calibration per IEC 62052; firmware-update tracking; data-privacy compliance",
+    "sortOrder": 3
+  },
+  {
+    "assetType": "Substation",
+    "category": "Facility",
+    "displayLabel": "Substation",
+    "description": "Electrical substations for voltage step-up/step-down and distribution switching",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 40,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "NERC CIP compliance (or local grid-code equivalent); arc-flash study every 5 years",
+    "sortOrder": 4
+  },
+  {
+    "assetType": "Pipeline",
+    "category": "Infrastructure",
+    "displayLabel": "Pipeline",
+    "description": "Water, gas, or oil pipeline segments including valves and fittings",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 50,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Inline inspection (pigging) per PHMSA or local pipeline-safety authority; cathodic-protection monitoring",
+    "sortOrder": 5
+  },
+  {
+    "assetType": "PumpingStation",
+    "category": "Facility",
+    "displayLabel": "Pumping Station",
+    "description": "Water/wastewater lift stations and booster-pump facilities",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 25,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "EPA NPDES permit compliance; SCADA alarm-response SLA",
+    "sortOrder": 6
+  },
+  {
+    "assetType": "WaterMain",
+    "category": "Infrastructure",
+    "displayLabel": "Water Main",
+    "description": "Potable-water and fire-service mains including hydrants",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 60,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Flushing programme; hydrant flow-test per NFPA 25 or local standard",
+    "sortOrder": 7
+  },
+  {
+    "assetType": "TelecomTower",
+    "category": "Infrastructure",
+    "displayLabel": "Telecom Tower / Mast",
+    "description": "Telecommunications towers, monopoles, and antenna mounts",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 25,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Structural inspection per TIA-222 or local code; FAA lighting compliance where applicable",
+    "sortOrder": 8
+  },
+  {
+    "assetType": "TrafficSignal",
+    "category": "Infrastructure",
+    "displayLabel": "Traffic Signal",
+    "description": "Signalised intersections including controllers, signal heads, and detection equipment",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 15,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "MUTCD compliance; conflict-monitor test quarterly",
+    "sortOrder": 9
+  },
+  {
+    "assetType": "Bridge",
+    "category": "Infrastructure",
+    "displayLabel": "Bridge",
+    "description": "Road, rail, or pedestrian bridges and culverts",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 75,
+    "defaultMaintenanceIntervalDays": 730,
+    "complianceNotes": "NBIS biennial inspection; load-rating review; scour-critical assessment",
+    "sortOrder": 10
+  },
+  {
+    "assetType": "SolarPanel",
+    "category": "Infrastructure",
+    "displayLabel": "Solar Panel Array",
+    "description": "Photovoltaic panels, inverters, and racking systems",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 25,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Performance-ratio monitoring; panel-cleaning schedule; inverter firmware updates",
+    "sortOrder": 11
+  },
+  {
+    "assetType": "WindTurbine",
+    "category": "Infrastructure",
+    "displayLabel": "Wind Turbine",
+    "description": "Onshore or offshore wind-turbine generators including nacelle, tower, and blades",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 25,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Blade inspection via drone/rope-access; gearbox oil analysis; lightning-protection system check",
+    "sortOrder": 12
+  }
+]

@@ -8,7 +8,7 @@ import { Subscription, filter } from 'rxjs';
   templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnDestroy {
-  email = 'admin@demo.local';
+  emailOrUsername = 'demo@demo.local';
   password = 'demo123!';
   busy = false;
   error = '';
@@ -36,17 +36,21 @@ export class LoginComponent implements OnDestroy {
   submit() {
     this.busy = true;
     this.error = '';
-    this.auth.login(this.email, this.password).subscribe({
+    this.auth.login(this.emailOrUsername, this.password).subscribe({
       next: r => {
         this.auth.saveToken(r.token);
-        // Navigate and wait for completion
+
+        // Auto-detect and send timezone after login
+        this.auth.sendDetectedTimezone();
+
+        // Navigate — LegalGuard will redirect to /legal/accept if needed
         this.router.navigateByUrl(this.redirectUrl, { replaceUrl: true }).then(() => {
           this.busy = false;
         }).catch(() => {
           this.busy = false;
         });
       },
-      error: _ => { this.error = 'Invalid email or password. Please try again.'; this.busy = false; }
+      error: _ => { this.error = 'Invalid email/username or password. Please try again.'; this.busy = false; }
     });
   }
 }

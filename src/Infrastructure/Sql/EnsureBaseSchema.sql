@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS "Projects" (
     "Name" text NOT NULL,
     "Description" text NULL,
     "OwnerId" uuid NOT NULL,
+    "IsPublic" boolean NOT NULL DEFAULT false,
     "CreatedAt" timestamp with time zone NOT NULL,
     CONSTRAINT "PK_Projects" PRIMARY KEY ("Id")
 );

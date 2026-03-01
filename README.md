@@ -4,12 +4,11 @@
 
 ### Real-Time Collaborative Task Management
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-app1.anubhavsharma.dev-00C853?style=for-the-badge)](https://app1.anubhavsharma.dev)
+[![Open App](https://img.shields.io/badge/🌐_Open_App-app1.anubhavsharma.dev-00C853?style=for-the-badge)](https://app1.anubhavsharma.dev)
 
 <br/>
 
 [![CI/CD](https://github.com/anubhavsharmawork/projectpulse/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/anubhavsharmawork/projectpulse/actions/workflows/ci-cd.yml)
-[![codecov](https://codecov.io/gh/anubhavsharmawork/projectpulse/graph/badge.svg?token=XD46NA9ZB2)](https://codecov.io/gh/anubhavsharmawork/projectpulse)
 ![Lighthouse](https://img.shields.io/badge/Lighthouse-100%2F100-00CC66?logo=lighthouse&logoColor=white)
 ![OWASP](https://img.shields.io/badge/Security-OWASP_Top_10-green?logo=owasp)
 
@@ -20,7 +19,9 @@
 
 <br/>
 
-**A production-ready, full-stack application demonstrating enterprise-grade software engineering practices.**
+**A full-stack application demonstrating enterprise-grade software engineering practices.**
+
+**One codebase. Seven+ industry domains. Zero base-logic forks.** Project Pulse proves that careful architecture outlasts clever shortcuts - a single template-driven engine serves IT, Healthcare, Construction, Infrastructure, Public Safety, Economic Development, and Technology projects without a single domain-specific `if` branch in the core pipeline.
 
 
 
@@ -83,6 +84,42 @@
     </td>
   </tr>
 </table>
+
+
+---
+
+## What Sets This Apart
+
+Most task management tools either hard-code one domain or require a separate fork for each vertical. Project Pulse takes a different path: **a single, stable core engine driven entirely by data templates**.
+
+### Template-Driven Domain Engine
+
+Every industry vertical - IT, Healthcare, Construction, Infrastructure, Public Safety, Economic Development, Technology - is defined by a JSON seed template. Each template configures:
+
+| Concern | What the template controls |
+|---------|---------------------------|
+| **Work item labels** | "Epic / User Story / Task" for IT, "Initiative / Care Plan / Action Item" for Healthcare, "Phase / Work Package / Activity" for Construction - all from one `WorkItemTypeLabels` map |
+| **Workflow states** | Healthcare starts at "Intake" and ends at "Completed"; Construction flows through "Inspection" and "Punch List" - same state machine, different data |
+| **Custom fields** | `PatientImpactLevel` and `PHIDataInvolved` for Healthcare, `SafetyIncidentCount` and `PermitNumber` for Construction - injected at seed time, enforced at runtime |
+| **Asset catalogs** | `DomainAssetConfig` maps each domain to its asset types with correct depreciation methods, maintenance intervals, and compliance notes - MedicalDevice for Healthcare, SmartMeter for Infrastructure |
+| **Notification rules** | Compliance alerts for Healthcare, inspection triggers for Construction - all toggles in the template JSON |
+
+The result: **zero domain-specific branching in the command/query handlers**. Adding a new industry vertical means writing one JSON file, running one migration, and restarting the service. The core logic never changes.
+
+### Operational Stability by Design
+
+Projects run for months or years. The choices here reflect that:
+
+| Principle | Implementation |
+|-----------|----------------|
+| **ISO 8601 everywhere** | A custom `Iso8601DateTimeConverter` on the backend and a matching `Iso8601Interceptor` on the frontend guarantee every date crosses the wire as UTC with `Z` suffix - no timezone drift, no locale surprises, no silent data corruption over time |
+| **PII field-level encryption** | `IEncryptionService` encrypts sensitive fields with AES-256 using per-tenant key derivation. Ciphertext is prefixed with `ENC:` so decryption is self-describing. If encryption is not configured, the service acts as a pass-through - graceful degradation, never a crash |
+| **Immutable audit trail** | Every entity change is captured by an EF Core `SaveChangesInterceptor` that serializes old/new values, the acting user, and a UTC timestamp into an append-only `AuditLog` table. The interceptor skips its own entity to prevent recursion. No audit record is ever updated or deleted |
+| **Multi-tenant isolation** | `TenantMiddleware` resolves the tenant from the JWT on every request. Every query is filtered by `TenantId` at the EF Core level. Encryption keys are derived per tenant. A tenant cannot read, write, or even detect another tenant's data |
+| **Domain-specific asset handling** | Assets carry physical fields (weight, barcode, maintenance schedule), digital fields (license key, seats, expiry), and infrastructure fields (grid reference, capacity, regulatory ID) - all on one entity, surfaced contextually by `DomainAssetConfig` |
+
+**It’s built to run unchanged for years - across teams, across industries - with the kind of reliable stability that makes operations effortless.**
+
 
 
 ---
@@ -348,6 +385,8 @@ WCAG 2.1 Level AA compliant with Lighthouse 100 score:
 
 ## Engineering Decisions
 
+Full architecture decision records are documented in [docs/ADR.md](docs/ADR.md). A detailed screen-by-screen UI walkthrough with component specifications, interaction patterns, and accessibility notes is available in [UI-WALKTHROUGH.md](UI-WALKTHROUGH.md).
+
 <details>
 <summary><b>Why Clean Architecture + CQRS?</b></summary>
 
@@ -383,28 +422,30 @@ WCAG 2.1 Level AA compliant with Lighthouse 100 score:
 
 ---
 
-## Author
+## Author & Intellectual Property
 
 <div align="center">
 
 **Anubhav Sharma**
 
-*Building production applications with a focus on clean code and security.*
+*Building production applications with a focus on clean code, security, and long-term operational stability.*
 
 </div>
+
+Project Pulse is the original work of Anubhav Sharma. The architecture, domain template engine, multi-tenant isolation design, audit trail system, and all application code in this repository were designed and implemented from first principles. No proprietary framework or third-party starter kit was used as a foundation.
+
+This project is published openly because transparency builds trust. The code speaks for itself.
 
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - [LICENSE](LICENSE).
+This project is dual-licensed:
+
+- **Source code** is available under the [MIT License](LICENSE)
+- **Third-party dependencies** (Angular, .NET, PostgreSQL, etc.) retain their respective licenses. See [LICENSE.txt](LICENSE.txt) for the Apache 2.0 license applicable to certain components.
+
+
 
 ---
-
-
-
-
-
-
-

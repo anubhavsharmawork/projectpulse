@@ -7,6 +7,7 @@ import { MatListModule } from '@angular/material/list';
 import { TasksComponent } from './tasks.component';
 import { TasksService } from './tasks.service';
 import { CommentsModule } from '../comments/comments.module';
+import { SharedModule } from '../shared/shared.module';
 
 const routes: Routes = [
   { path: '', component: TasksComponent }
@@ -25,7 +26,7 @@ loadMaterialTheme();
 
 @NgModule({
   declarations: [TasksComponent],
-  imports: [CommonModule, FormsModule, MatButtonModule, MatListModule, CommentsModule, RouterModule.forChild(routes)],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatListModule, CommentsModule, SharedModule, RouterModule.forChild(routes)],
   exports: [RouterModule],
   providers: [TasksService]
 })

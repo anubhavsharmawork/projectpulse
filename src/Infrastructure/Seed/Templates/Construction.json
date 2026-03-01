@@ -1,0 +1,109 @@
+{
+  "name": "Construction Project Template",
+  "domainType": "Construction",
+  "defaultWorkflow": {
+    "name": "Construction Default Workflow",
+    "states": [
+      { "name": "Planning", "order": 1, "isInitial": true, "isFinal": false },
+      { "name": "Permitting", "order": 2, "isInitial": false, "isFinal": false },
+      { "name": "In Construction", "order": 3, "isInitial": false, "isFinal": false },
+      { "name": "Inspection", "order": 4, "isInitial": false, "isFinal": false },
+      { "name": "Punch List", "order": 5, "isInitial": false, "isFinal": false },
+      { "name": "Completed", "order": 6, "isInitial": false, "isFinal": true }
+    ]
+  },
+  "defaultNotificationRules": {
+    "onStateChange": true,
+    "onAssignment": true,
+    "onInspectionScheduled": true,
+    "onPermitExpiry": true
+  },
+  "customFields": [
+    {
+      "name": "PermitNumber",
+      "fieldType": "Text",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "PermitStatus",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Not Applied\",\"Pending\",\"Approved\",\"Expired\",\"Revoked\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "ContractorName",
+      "fieldType": "Text",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "ContractorLicense",
+      "fieldType": "Text",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "WorkplaceSafetyCompliance",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Compliant\",\"Non-Compliant\",\"Under Review\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "InspectionType",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Foundation\",\"Structural\",\"Electrical\",\"Plumbing\",\"Fire\",\"Final\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "InspectionStatus",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Scheduled\",\"Passed\",\"Failed\",\"Re-Inspection\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "SafetyIncidents",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "WeatherDelayDays",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "MaterialDeliveryStatus",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Ordered\",\"In Transit\",\"Delivered\",\"Delayed\"]",
+      "validationRule": null,
+      "entityType": "2"
+    }
+  ],
+  "workItemTypeLabels": {
+    "1": "Phase",
+    "2": "Activity",
+    "3": "Punch Item",
+    "4": "SubItem"
+  }
+}

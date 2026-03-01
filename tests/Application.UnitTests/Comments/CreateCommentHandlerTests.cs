@@ -123,7 +123,7 @@ namespace Application.UnitTests.Comments
             var workItemId = Guid.NewGuid();
             using var db = TestDbContextFactory.Create();
             var httpMock = new Mock<IHttpContextAccessor>();
-            httpMock.Setup(x => x.HttpContext).Returns((HttpContext?)null);
+            httpMock.Setup(x => x.HttpContext).Returns((HttpContext?)null!);
             var handler = new CreateCommentHandler(db, httpMock.Object);
             var command = new CreateCommentCommand(workItemId, "Test comment");
 

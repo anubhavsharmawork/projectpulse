@@ -56,6 +56,7 @@ namespace Application.UnitTests.Projects
             project!.Name.Should().Be("Test Project");
             project.Description.Should().Be("Test Description");
             project.OwnerId.Should().Be(ownerId);
+            project.IsPublic.Should().BeFalse();
         }
 
         [Fact]
@@ -83,7 +84,7 @@ namespace Application.UnitTests.Projects
             // Arrange
             using var db = TestDbContextFactory.Create();
             var httpMock = new Mock<IHttpContextAccessor>();
-            httpMock.Setup(x => x.HttpContext).Returns((HttpContext?)null);
+            httpMock.Setup(x => x.HttpContext).Returns((HttpContext?)null!);
             var handler = new CreateProjectHandler(db, httpMock.Object);
             var command = new CreateProjectCommand("Test Project", null);
 
@@ -157,6 +158,42 @@ namespace Application.UnitTests.Projects
             // Assert
             result1.ProjectId.Should().NotBe(result2.ProjectId);
             (await db.Projects.CountAsync()).Should().Be(2);
+        }
+
+        [Fact]
+        public async Task Handle_IsPublicTrue_ShouldCreatePublicProject()
+        {
+            // Arrange
+            var ownerId = Guid.NewGuid();
+            using var db = TestDbContextFactory.Create();
+            var httpMock = CreateHttpContextAccessor(ownerId);
+            var handler = new CreateProjectHandler(db, httpMock.Object);
+            var command = new CreateProjectCommand("Public Project", "Visible to all", IsPublic: true);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            var project = await db.Projects.SingleAsync(p => p.Id == result.ProjectId);
+            project.IsPublic.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Handle_IsPublicDefault_ShouldCreatePrivateProject()
+        {
+            // Arrange
+            var ownerId = Guid.NewGuid();
+            using var db = TestDbContextFactory.Create();
+            var httpMock = CreateHttpContextAccessor(ownerId);
+            var handler = new CreateProjectHandler(db, httpMock.Object);
+            var command = new CreateProjectCommand("Private Project", "Owner only");
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            var project = await db.Projects.SingleAsync(p => p.Id == result.ProjectId);
+            project.IsPublic.Should().BeFalse();
         }
     }
 }

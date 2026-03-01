@@ -16,3 +16,16 @@ obj/
 # Ignore Angular build artifacts
 frontend/dist/
 frontend/.angular/
+
+# ── SECURITY: Environment variables with secrets ──
+# Never commit .env files containing ADMIN_PASSWORD_HASH, ADMIN_SALT, or other secrets
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# IDE-specific files
+.idea/
+*.swp
+*.swo
+*.swn

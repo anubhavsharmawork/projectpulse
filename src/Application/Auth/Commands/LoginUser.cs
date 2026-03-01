@@ -21,14 +21,51 @@ namespace Application.Auth.Commands
 
         public async Task<LoginUserResult> Handle(LoginUserCommand request, CancellationToken cancellationToken)
         {
-            var user = await _db.Users.SingleOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+            // Support login by email OR username — the Email field accepts either.
+            var identifier = request.Email?.Trim();
+
+            // Authentication must bypass tenant query filters.
+            // The user's tenant is determined AFTER credential verification, not before.
+            var user = await _db.Users
+                .IgnoreQueryFilters()
+                .Include(u => u.AppRole)
+                    .ThenInclude(r => r!.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+                .SingleOrDefaultAsync(
+                    u => u.Email == identifier || u.UserName == identifier,
+                    cancellationToken);
             if (user == null) throw new UnauthorizedAccessException("Invalid credentials");
 
-            var salt = _config["DEMO_SALT"] ?? "demo-salt";
-            if (!SimplePasswordHasher.Verify(request.Password, salt, user.PasswordHash))
+            // Admin users are hashed with ADMIN_SALT; other users use DEMO_SALT.
+            // Try the appropriate salt based on the user's Role enum.
+            var verified = false;
+            if (user.Role == Domain.Entities.Role.Admin)
+            {
+                var adminSalt = _config["ADMIN_SALT"];
+                if (!string.IsNullOrWhiteSpace(adminSalt))
+                    verified = SimplePasswordHasher.Verify(request.Password, adminSalt, user.PasswordHash);
+            }
+
+            if (!verified)
+            {
+                // Fall back to demo salt (covers demo users and legacy admin@demo.local)
+                var demoSalt = _config["DEMO_SALT"] ?? "demo-salt";
+                verified = SimplePasswordHasher.Verify(request.Password, demoSalt, user.PasswordHash);
+            }
+
+            if (!verified)
                 throw new UnauthorizedAccessException("Invalid credentials");
 
-            var token = _jwt.GenerateToken(user.Id, user.Email, user.Role.ToString());
+            string? systemRole = user.AppRole?.SystemRole.ToString();
+            var permissions = user.AppRole?.RolePermissions
+                .Where(rp => rp.Permission != null)
+                .Select(rp => rp.Permission.Name)
+                .ToList();
+
+            // Detect demo users by email pattern — demo users get read-only access in system admin
+            var isDemo = user.Email.EndsWith("@demo.local", StringComparison.OrdinalIgnoreCase);
+
+            var token = _jwt.GenerateToken(user.Id, user.TenantId, user.Email, user.Role.ToString(), systemRole, permissions, isDemo);
             return new LoginUserResult(token);
         }
     }

@@ -8,6 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { SharedModule } from '../shared/shared.module';
 import { LoginComponent } from './login.component';
 import { RegisterComponent } from './register.component';
 
@@ -37,6 +39,8 @@ loadMaterialTheme();
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatCheckboxModule,
+    SharedModule,
     RouterModule.forChild(routes)
   ],
   exports: [RouterModule],

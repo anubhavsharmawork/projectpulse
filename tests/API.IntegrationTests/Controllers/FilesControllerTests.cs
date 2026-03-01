@@ -10,6 +10,8 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers
 {
+    // NOTE: Integration tests — exclude with: dotnet test --filter "Category!=Integration"
+    [Trait("Category", "Integration")]
     public class FilesControllerTests : IClassFixture<TestWebApplicationFactory>
     {
         private readonly TestWebApplicationFactory _factory;

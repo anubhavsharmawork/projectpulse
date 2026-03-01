@@ -1,0 +1,112 @@
+[
+  {
+    "assetType": "Excavator",
+    "category": "Physical",
+    "displayLabel": "Excavator",
+    "description": "Track or wheel excavators for earthmoving operations",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 250,
+    "complianceNotes": "OSHA daily inspection checklist; operator certification required",
+    "sortOrder": 1
+  },
+  {
+    "assetType": "Crane",
+    "category": "Physical",
+    "displayLabel": "Crane",
+    "description": "Mobile, tower, and overhead cranes",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 15,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Annual structural inspection; load-test certification; operator licence verification",
+    "sortOrder": 2
+  },
+  {
+    "assetType": "Scaffolding",
+    "category": "Physical",
+    "displayLabel": "Scaffolding",
+    "description": "System scaffolding, frames, planks, and accessories",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 30,
+    "complianceNotes": "Competent-person inspection before each use; tag-in/tag-out system",
+    "sortOrder": 3
+  },
+  {
+    "assetType": "Bulldozer",
+    "category": "Physical",
+    "displayLabel": "Bulldozer",
+    "description": "Track-type tractors for grading and clearing",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 12,
+    "defaultMaintenanceIntervalDays": 250,
+    "complianceNotes": "Rollover-protection verification; emissions compliance",
+    "sortOrder": 4
+  },
+  {
+    "assetType": "ConcreteEquipment",
+    "category": "Physical",
+    "displayLabel": "Concrete Equipment",
+    "description": "Mixers, pumps, vibrators, and finishing equipment",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 8,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Clean-out procedures to prevent environmental contamination",
+    "sortOrder": 5
+  },
+  {
+    "assetType": "SurveyingInstrument",
+    "category": "Instrument",
+    "displayLabel": "Surveying Instrument",
+    "description": "Total stations, GPS/GNSS receivers, levels, and laser scanners",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 7,
+    "defaultMaintenanceIntervalDays": 365,
+    "complianceNotes": "Annual calibration certificate required",
+    "sortOrder": 6
+  },
+  {
+    "assetType": "SafetyEquipment",
+    "category": "SafetyGear",
+    "displayLabel": "Safety Equipment / PPE",
+    "description": "Hard hats, harnesses, hi-vis vests, fall-arrest systems",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 2,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "Replace per manufacturer expiry; inspect before each shift",
+    "sortOrder": 7
+  },
+  {
+    "assetType": "PowerTool",
+    "category": "Physical",
+    "displayLabel": "Power Tool",
+    "description": "Drills, saws, grinders, and nail guns",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 5,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "PAT tested; guard verification before use",
+    "sortOrder": 8
+  },
+  {
+    "assetType": "HeavyTruck",
+    "category": "Vehicle",
+    "displayLabel": "Heavy Truck",
+    "description": "Dump trucks, flatbeds, and concrete-mixer trucks",
+    "defaultDepreciationMethod": "DecliningBalance",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 90,
+    "complianceNotes": "DOT inspection; daily walk-around checklist; CDL required",
+    "sortOrder": 9
+  },
+  {
+    "assetType": "Generator",
+    "category": "Physical",
+    "displayLabel": "Generator",
+    "description": "Portable and standby power generators",
+    "defaultDepreciationMethod": "StraightLine",
+    "defaultUsefulLifeYears": 10,
+    "defaultMaintenanceIntervalDays": 180,
+    "complianceNotes": "Emissions compliance; fuel-storage regulations; load-bank test annually",
+    "sortOrder": 10
+  }
+]

@@ -1,0 +1,187 @@
+<div class="dashboard-header">
+  <h2>Dashboard</h2>
+  <select class="domain-select"
+          [(ngModel)]="selectedDomain"
+          (ngModelChange)="onDomainChange()"
+          aria-label="Filter by domain">
+    <option *ngFor="let d of domains" [value]="d.value">{{ d.label }}</option>
+  </select>
+</div>
+
+<div *ngIf="loading" class="loading" role="status" aria-live="polite">Loading dashboard&hellip;</div>
+
+<!-- ── Common KPIs ── -->
+<ng-container *ngIf="!loading && common">
+  <div class="kpi-grid" role="list" aria-label="Key performance indicators">
+    <div class="kpi-card green" role="listitem">
+      <div class="kpi-label">Completion Rate</div>
+      <div class="kpi-value">{{ common.completionRate }}%</div>
+      <div class="kpi-sub">{{ common.completedTasks }} of {{ common.totalTasks }} tasks</div>
+    </div>
+    <div class="kpi-card amber" role="listitem">
+      <div class="kpi-label">Overdue Items</div>
+      <div class="kpi-value">{{ common.overdueItems }}</div>
+      <div class="kpi-sub">Older than 14 days</div>
+    </div>
+    <div class="kpi-card blue" role="listitem">
+      <div class="kpi-label">Team Utilization</div>
+      <div class="kpi-value">{{ common.teamUtilization }}%</div>
+      <div class="kpi-sub">Past 7 days</div>
+    </div>
+    <div class="kpi-card purple" role="listitem">
+      <div class="kpi-label">Total Tasks</div>
+      <div class="kpi-value">{{ common.totalTasks }}</div>
+      <div class="kpi-sub">{{ common.completedTasks }} completed</div>
+    </div>
+  </div>
+
+  <!-- ── Utilization bar ── -->
+  <div class="kpi-card" style="margin-bottom: 1.5rem;" *ngIf="common.totalTasks > 0">
+    <div class="kpi-label">Overall Completion</div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem;">
+      <div style="flex: 1; background: #e2e8f0; border-radius: 999px; height: 10px; overflow: hidden;">
+        <div [style.width.%]="common.completionRate"
+             style="height: 100%; background: linear-gradient(90deg, #3b82f6, #06b6d4); border-radius: 999px; transition: width 0.5s ease;"
+             role="progressbar"
+             [attr.aria-valuenow]="common.completionRate"
+             aria-valuemin="0" aria-valuemax="100"
+             [attr.aria-label]="'Completion: ' + common.completionRate + ' percent'"></div>
+      </div>
+      <span style="font-size: 0.875rem; font-weight: 600; color: #1e293b; min-width: 3rem; text-align: right;">{{ common.completionRate }}%</span>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── IT / Technology KPIs ── -->
+<ng-container *ngIf="itKpis">
+  <div class="section-title"><span class="dot dot-it"></span>IT / Technology</div>
+  <div class="kpi-grid" role="list" aria-label="IT metrics">
+    <div class="kpi-card blue" role="listitem">
+      <div class="kpi-label">Velocity (4-week)</div>
+      <div class="velocity-bars" aria-hidden="true">
+        <div *ngFor="let v of itKpis.velocityTrend; let i = index"
+             class="velocity-bar"
+             [style.height.%]="(v / velocityMax()) * 100"></div>
+      </div>
+      <div class="kpi-sub">{{ itKpis.velocityTrend[3] || 0 }} items this week</div>
+    </div>
+    <div class="kpi-card red" role="listitem">
+      <div class="kpi-label">Open Bugs</div>
+      <div class="kpi-value">{{ itKpis.openBugs }}</div>
+      <div class="map-items">
+        <div class="map-item" *ngFor="let entry of objectEntries(itKpis.bugsBySeverity)">
+          <span class="map-item-label">{{ entry[0] }}</span>
+          <span class="map-item-value">{{ entry[1] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card amber" role="listitem">
+      <div class="kpi-label">Tech Debt Ratio</div>
+      <div class="kpi-value">{{ itKpis.techDebtRatio }}%</div>
+      <div class="kpi-sub">Of open items</div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── Healthcare KPIs ── -->
+<ng-container *ngIf="healthcareKpis">
+  <div class="section-title"><span class="dot dot-health"></span>Healthcare</div>
+  <div class="kpi-grid" role="list" aria-label="Healthcare metrics">
+    <div class="kpi-card green" role="listitem">
+      <div class="kpi-label">Compliance Status</div>
+      <div class="map-items">
+        <div class="map-item" *ngFor="let entry of objectEntries(healthcareKpis.complianceStatus)">
+          <span class="map-item-label">{{ entry[0] }}</span>
+          <span class="map-item-value">{{ entry[1] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card cyan" role="listitem">
+      <div class="kpi-label">Patients Affected</div>
+      <div class="kpi-value">{{ healthcareKpis.patientsAffectedTotal }}</div>
+    </div>
+    <div class="kpi-card blue" role="listitem">
+      <div class="kpi-label">Training Progress</div>
+      <div class="kpi-value">{{ healthcareKpis.trainingProgressPercent }}%</div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── Construction KPIs ── -->
+<ng-container *ngIf="constructionKpis">
+  <div class="section-title"><span class="dot dot-construction"></span>Construction</div>
+  <div class="kpi-grid" role="list" aria-label="Construction metrics">
+    <div class="kpi-card amber" role="listitem">
+      <div class="kpi-label">Permit Status</div>
+      <div class="map-items">
+        <div class="map-item" *ngFor="let entry of objectEntries(constructionKpis.permitStatusSummary)">
+          <span class="map-item-label">{{ entry[0] }}</span>
+          <span class="map-item-value">{{ entry[1] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-card green" role="listitem">
+      <div class="kpi-label">Inspection Pass Rate</div>
+      <div class="kpi-value">{{ constructionKpis.inspectionPassRate }}%</div>
+    </div>
+    <div class="kpi-card red" role="listitem">
+      <div class="kpi-label">Safety Incidents</div>
+      <div class="kpi-value">{{ constructionKpis.safetyIncidents }}</div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── Infrastructure KPIs ── -->
+<ng-container *ngIf="infraKpis">
+  <div class="section-title"><span class="dot dot-infra"></span>Infrastructure</div>
+  <div class="kpi-grid" role="list" aria-label="Infrastructure metrics">
+    <div class="kpi-card" [class]="infraKpis.budgetVariancePercent > 0 ? 'red' : 'green'" role="listitem">
+      <div class="kpi-label">Budget Variance</div>
+      <div class="kpi-value">{{ infraKpis.budgetVariancePercent }}%</div>
+      <div class="kpi-sub">{{ infraKpis.budgetVariancePercent > 0 ? 'Over budget' : infraKpis.budgetVariancePercent < 0 ? 'Under budget' : 'On track' }}</div>
+    </div>
+    <div class="kpi-card blue" role="listitem">
+      <div class="kpi-label">Maintenance Adherence</div>
+      <div class="kpi-value">{{ infraKpis.maintenanceAdherencePercent }}%</div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── Budget Table ── -->
+<div class="budget-section" *ngIf="budget.length > 0">
+  <div class="section-title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+    </svg>
+    Budget Overview
+  </div>
+  <table class="budget-table" aria-label="Project budget summary">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Domain</th>
+        <th>Estimated</th>
+        <th>Actual</th>
+        <th>Variance</th>
+        <th>Epics</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let b of budget">
+        <td>{{ b.projectName }}</td>
+        <td><span class="domain-badge">{{ b.domainType }}</span></td>
+        <td>{{ formatCurrency(b.estimatedCost) }}</td>
+        <td>{{ formatCurrency(b.actualCost) }}</td>
+        <td [class]="varianceClass(b.variancePercent)">
+          {{ b.variancePercent > 0 ? '+' : '' }}{{ b.variancePercent }}%
+          <span style="font-weight:400; color: #94a3b8; margin-left: 0.25rem;">
+            ({{ formatCurrency(b.budgetVariance) }})
+          </span>
+        </td>
+        <td>{{ b.epicCount }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="!loading && !common" class="empty">No dashboard data available.</div>

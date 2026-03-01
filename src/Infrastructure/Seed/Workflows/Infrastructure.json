@@ -1,0 +1,86 @@
+{
+  "name": "Infrastructure Workflow",
+  "domainType": "Infrastructure",
+  "states": [
+    {
+      "name": "Assessment",
+      "order": 1,
+      "color": "#6B7280",
+      "isInitial": true,
+      "isFinal": false,
+      "allowedTransitions": ["Planning"],
+      "requiredFields": ["AssetType"],
+      "notifyOnEntry": false
+    },
+    {
+      "name": "Planning",
+      "order": 2,
+      "color": "#8B5CF6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Public Consultation", "Assessment"],
+      "requiredFields": ["CostEstimate", "PublicImpactLevel"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Public Consultation",
+      "order": 3,
+      "color": "#3B82F6",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Budgeting", "Planning"],
+      "requiredFields": ["AffectedPopulation"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Budgeting",
+      "order": 4,
+      "color": "#F59E0B",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Procurement", "Public Consultation"],
+      "requiredFields": ["FundingSource"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Procurement",
+      "order": 5,
+      "color": "#EC4899",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Execution", "Budgeting"],
+      "requiredFields": ["EnvironmentalAssessment"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Execution",
+      "order": 6,
+      "color": "#06B6D4",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Testing"],
+      "requiredFields": [],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Testing",
+      "order": 7,
+      "color": "#10B981",
+      "isInitial": false,
+      "isFinal": false,
+      "allowedTransitions": ["Operational", "Execution"],
+      "requiredFields": ["ActualCost"],
+      "notifyOnEntry": true
+    },
+    {
+      "name": "Operational",
+      "order": 8,
+      "color": "#22C55E",
+      "isInitial": false,
+      "isFinal": true,
+      "allowedTransitions": [],
+      "requiredFields": ["MaintenanceSchedule"],
+      "notifyOnEntry": true
+    }
+  ]
+}

@@ -13,6 +13,8 @@ export interface TaskDto {
   attachmentUrl?: string;
   isCompleted: boolean;
   completedAt?: string;
+  currentStateName?: string;
+  currentStateColor?: string;
 }
 
 @Injectable({ providedIn: 'root' })

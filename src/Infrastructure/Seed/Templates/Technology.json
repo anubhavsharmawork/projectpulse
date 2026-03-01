@@ -1,0 +1,85 @@
+{
+  "name": "Technology Project Template",
+  "domainType": "Technology",
+  "defaultWorkflow": {
+    "name": "Technology Default Workflow",
+    "states": [
+      { "name": "Discovery", "order": 1, "isInitial": true, "isFinal": false },
+      { "name": "Design", "order": 2, "isInitial": false, "isFinal": false },
+      { "name": "Development", "order": 3, "isInitial": false, "isFinal": false },
+      { "name": "Testing", "order": 4, "isInitial": false, "isFinal": false },
+      { "name": "Deployment", "order": 5, "isInitial": false, "isFinal": false },
+      { "name": "Released", "order": 6, "isInitial": false, "isFinal": true }
+    ]
+  },
+  "defaultNotificationRules": {
+    "onStateChange": true,
+    "onAssignment": true,
+    "onComment": true,
+    "onDeployment": true
+  },
+  "customFields": [
+    {
+      "name": "ReleaseVersion",
+      "fieldType": "Text",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "RiskLevel",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Low\",\"Medium\",\"High\",\"Critical\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "StoryPoints",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": "[1,2,3,5,8,13,21]",
+      "validationRule": "fibonacci",
+      "entityType": "2"
+    },
+    {
+      "name": "SprintNumber",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "AcceptanceCriteria",
+      "fieldType": "RichText",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "TechDebtFlag",
+      "fieldType": "Boolean",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "DeploymentEnvironment",
+      "fieldType": "MultiSelect",
+      "isRequired": false,
+      "options": "[\"Dev\",\"Staging\",\"UAT\",\"Production\"]",
+      "validationRule": null,
+      "entityType": "3"
+    }
+  ],
+  "workItemTypeLabels": {
+    "1": "Epic",
+    "2": "Feature",
+    "3": "Task",
+    "4": "SubTask"
+  }
+}

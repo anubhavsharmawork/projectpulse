@@ -3,6 +3,7 @@ namespace Domain.Entities
     public class MentionNotification
     {
         public Guid Id { get; set; }
+        public Guid TenantId { get; set; }
         public Guid UserId { get; set; }
         public Guid CommentId { get; set; }
         public Guid WorkItemId { get; set; }

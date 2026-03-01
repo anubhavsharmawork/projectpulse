@@ -1,0 +1,85 @@
+{
+  "name": "Economic Development Project Template",
+  "domainType": "EconomicDevelopment",
+  "defaultWorkflow": {
+    "name": "Economic Development Default Workflow",
+    "states": [
+      { "name": "Ideation", "order": 1, "isInitial": true, "isFinal": false },
+      { "name": "Feasibility Study", "order": 2, "isInitial": false, "isFinal": false },
+      { "name": "Funding & Grants", "order": 3, "isInitial": false, "isFinal": false },
+      { "name": "Implementation", "order": 4, "isInitial": false, "isFinal": false },
+      { "name": "Monitoring", "order": 5, "isInitial": false, "isFinal": false },
+      { "name": "Completed", "order": 6, "isInitial": false, "isFinal": true }
+    ]
+  },
+  "defaultNotificationRules": {
+    "onStateChange": true,
+    "onAssignment": true,
+    "onGrantDeadline": true,
+    "onPartnershipUpdate": true
+  },
+  "customFields": [
+    {
+      "name": "TargetIndustry",
+      "fieldType": "MultiSelect",
+      "isRequired": false,
+      "options": "[\"Retail\",\"Technology\",\"Manufacturing\",\"Agriculture\",\"Services\"]",
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "JobsProjected",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "JobsActual",
+      "fieldType": "Number",
+      "isRequired": false,
+      "options": null,
+      "validationRule": null,
+      "entityType": "1"
+    },
+    {
+      "name": "InvestmentAmount",
+      "fieldType": "Currency",
+      "isRequired": false,
+      "options": null,
+      "validationRule": "$",
+      "entityType": "1"
+    },
+    {
+      "name": "BusinessType",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Startup\",\"SME\",\"Enterprise\",\"Non-Profit\"]",
+      "validationRule": null,
+      "entityType": "2"
+    },
+    {
+      "name": "GrantAmount",
+      "fieldType": "Currency",
+      "isRequired": false,
+      "options": null,
+      "validationRule": "$",
+      "entityType": "2"
+    },
+    {
+      "name": "PartnershipStatus",
+      "fieldType": "Dropdown",
+      "isRequired": false,
+      "options": "[\"Prospecting\",\"Negotiating\",\"Active\",\"Completed\"]",
+      "validationRule": null,
+      "entityType": "2"
+    }
+  ],
+  "workItemTypeLabels": {
+    "1": "Program",
+    "2": "Initiative",
+    "3": "Task",
+    "4": "SubTask"
+  }
+}

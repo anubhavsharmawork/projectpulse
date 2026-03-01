@@ -1,0 +1,188 @@
+<div class="form-container">
+      <div class="form-header">
+        <button class="btn-back" (click)="goBack()">← Back</button>
+        <h2>{{isEdit ? 'Edit Asset' : 'Create New Asset'}}</h2>
+      </div>
+
+      <div class="loading" *ngIf="loadingConfig">Loading domain configuration...</div>
+
+      <form (ngSubmit)="submit()" class="asset-form" *ngIf="!loadingConfig">
+        <!-- Asset Tag + Type (create only) -->
+        <div class="form-row" *ngIf="!isEdit">
+          <div class="form-group">
+            <label for="assetTag">Asset Tag *</label>
+            <input id="assetTag" [(ngModel)]="form.assetTag" name="assetTag" required placeholder="e.g., AST-001">
+          </div>
+          <div class="form-group">
+            <label for="assetType">Asset Type *</label>
+            <select id="assetType" [(ngModel)]="form.assetType" name="assetType" (ngModelChange)="onTypeSelected($event)">
+              <option [ngValue]="null" disabled>Select type...</option>
+              <option *ngFor="let t of typeOptions" [ngValue]="t.value">{{t.label}}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Type description + compliance notes -->
+        <div class="info-banner" *ngIf="selectedConfig?.description && !isEdit">
+          <span class="info-icon">ℹ</span> {{selectedConfig?.description}}
+        </div>
+        <div class="compliance-banner" *ngIf="selectedConfig?.complianceNotes && !isEdit">
+          <span class="info-icon">⚠</span> <strong>Compliance:</strong> {{selectedConfig?.complianceNotes}}
+        </div>
+
+        <!-- Name + Status -->
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="name">Name *</label>
+            <input id="name" [(ngModel)]="form.name" name="name" required placeholder="Asset name">
+          </div>
+          <div class="form-group">
+            <label for="status">Status *</label>
+            <select id="status" [(ngModel)]="form.status" name="status">
+              <option *ngFor="let s of statusOptions" [ngValue]="s.value">{{s.label}}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" [(ngModel)]="form.description" name="description" rows="3" placeholder="Optional description"></textarea>
+        </div>
+
+        <!-- Location + Manufacturer + Model -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="location">Location *</label>
+            <input id="location" [(ngModel)]="form.location" name="location" required placeholder="Building, room, etc.">
+          </div>
+          <div class="form-group">
+            <label for="manufacturer">Manufacturer</label>
+            <input id="manufacturer" [(ngModel)]="form.manufacturer" name="manufacturer" placeholder="e.g., Dell">
+          </div>
+          <div class="form-group">
+            <label for="model">Model</label>
+            <input id="model" [(ngModel)]="form.model" name="model" placeholder="e.g., Latitude 5540">
+          </div>
+        </div>
+
+        <!-- Serial + Purchase -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="serialNumber">Serial Number</label>
+            <input id="serialNumber" [(ngModel)]="form.serialNumber" name="serialNumber" placeholder="S/N">
+          </div>
+          <div class="form-group" *ngIf="!isEdit">
+            <label for="purchaseDate">Purchase Date *</label>
+            <input id="purchaseDate" type="date" [(ngModel)]="form.purchaseDate" name="purchaseDate" required>
+          </div>
+          <div class="form-group" *ngIf="!isEdit">
+            <label for="purchasePrice">Purchase Price (\$) *</label>
+            <input id="purchasePrice" type="number" [(ngModel)]="form.purchasePrice" name="purchasePrice" required min="0" step="0.01">
+          </div>
+        </div>
+
+        <!-- Value + Depreciation + Useful Life -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="currentValue">Current Value (\$)</label>
+            <input id="currentValue" type="number" [(ngModel)]="form.currentValue" name="currentValue" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="depreciationMethod">Depreciation Method</label>
+            <select id="depreciationMethod" [(ngModel)]="form.depreciationMethod" name="depreciationMethod">
+              <option [ngValue]="1">Straight Line</option>
+              <option [ngValue]="2">Declining Balance</option>
+              <option [ngValue]="3">No Depreciation</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="usefulLifeYears">Useful Life (Years)</label>
+            <input id="usefulLifeYears" type="number" [(ngModel)]="form.usefulLifeYears" name="usefulLifeYears" min="1" max="100">
+          </div>
+        </div>
+
+        <!-- Warranty + Weight + Maintenance -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="warrantyExpiryDate">Warranty Expiry</label>
+            <input id="warrantyExpiryDate" type="date" [(ngModel)]="form.warrantyExpiryDate" name="warrantyExpiryDate">
+          </div>
+          <div class="form-group">
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" type="number" [(ngModel)]="form.weight" name="weight" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="maintenanceIntervalDays">Maintenance Interval (days)</label>
+            <input id="maintenanceIntervalDays" type="number" [(ngModel)]="form.maintenanceIntervalDays" name="maintenanceIntervalDays" min="1">
+          </div>
+        </div>
+
+        <!-- Vendor (all domains) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vendor">Vendor</label>
+            <input id="vendor" [(ngModel)]="form.vendor" name="vendor" placeholder="Supplier / vendor name">
+          </div>
+          <div class="form-group">
+            <label for="dimensions">Dimensions</label>
+            <input id="dimensions" [(ngModel)]="form.dimensions" name="dimensions" placeholder="L x W x H">
+          </div>
+          <div class="form-group">
+            <label for="barcodeValue">Barcode Value</label>
+            <input id="barcodeValue" [(ngModel)]="form.barcodeValue" name="barcodeValue" placeholder="QR/Barcode">
+          </div>
+        </div>
+
+        <!-- License fields (category = License or Digital) -->
+        <div *ngIf="showLicenseFields" class="section-block">
+          <h3 class="section-title">License Details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="licenseKey">License Key</label>
+              <input id="licenseKey" [(ngModel)]="form.licenseKey" name="licenseKey" placeholder="XXXX-XXXX-XXXX">
+            </div>
+            <div class="form-group">
+              <label for="licensedSeats">Licensed Seats</label>
+              <input id="licensedSeats" type="number" [(ngModel)]="form.licensedSeats" name="licensedSeats" min="1">
+            </div>
+            <div class="form-group">
+              <label for="licenseExpiryDate">License Expiry</label>
+              <input id="licenseExpiryDate" type="date" [(ngModel)]="form.licenseExpiryDate" name="licenseExpiryDate">
+            </div>
+          </div>
+        </div>
+
+        <!-- Infrastructure fields (category = Infrastructure or Facility) -->
+        <div *ngIf="showInfraFields" class="section-block">
+          <h3 class="section-title">Infrastructure Details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gridReference">Grid Reference</label>
+              <input id="gridReference" [(ngModel)]="form.gridReference" name="gridReference" placeholder="e.g., 51.5074, -0.1278">
+            </div>
+            <div class="form-group">
+              <label for="capacity">Capacity</label>
+              <input id="capacity" [(ngModel)]="form.capacity" name="capacity" placeholder="e.g., 500 kVA">
+            </div>
+            <div class="form-group">
+              <label for="regulatoryId">Regulatory ID</label>
+              <input id="regulatoryId" [(ngModel)]="form.regulatoryId" name="regulatoryId" placeholder="Permit / registration #">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea id="notes" [(ngModel)]="form.notes" name="notes" rows="3" placeholder="Any additional notes"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="busy || !form.name || !form.location">
+            {{busy ? 'Saving...' : (isEdit ? 'Update Asset' : 'Create Asset')}}
+          </button>
+          <button type="button" class="btn-cancel" (click)="goBack()">Cancel</button>
+        </div>
+
+        <div class="error-msg" *ngIf="error">{{error}}</div>
+      </form>
+    </div>

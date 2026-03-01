@@ -1,0 +1,47 @@
+<div class="create-tenant">
+      <h3>Create New Tenant</h3>
+
+      <div class="demo-banner" *ngIf="isDemoUser">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        Preview Only: You are logged in as a demo user. Tenant creation is disabled.
+      </div>
+
+      <div class="form-card" [class.readonly]="isDemoUser">
+        <div class="form-row">
+          <label for="tenant-name">Organization Name</label>
+          <input id="tenant-name" [(ngModel)]="name" class="form-input" placeholder="Acme Corporation" maxlength="200" [disabled]="isDemoUser" />
+          <small class="form-hint" *ngIf="name.length > 0 && name.trim().length < 3">At least 3 characters required</small>
+        </div>
+        <div class="form-row">
+          <label for="tenant-tier">Subscription Tier</label>
+          <div class="tier-cards">
+            <div class="tier-card" [class.selected]="tier === 'Starter'" (click)="isDemoUser ? null : tier = 'Starter'">
+              <span class="tier-name">Starter</span>
+              <span class="tier-desc">Best for small teams</span>
+              <span class="tier-detail">Up to 5 users, 10 projects</span>
+            </div>
+            <div class="tier-card" [class.selected]="tier === 'Business'" (click)="isDemoUser ? null : tier = 'Business'">
+              <span class="tier-name">Business</span>
+              <span class="tier-desc">Best for growing companies</span>
+              <span class="tier-detail">Up to 50 users, unlimited projects</span>
+            </div>
+            <div class="tier-card" [class.selected]="tier === 'Enterprise'" (click)="isDemoUser ? null : tier = 'Enterprise'">
+              <span class="tier-name">Enterprise</span>
+              <span class="tier-desc">Best for large organizations</span>
+              <span class="tier-detail">Unlimited users &amp; projects</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="cancel-btn" (click)="cancel()">Cancel</button>
+          <button class="submit-btn" (click)="create()" [disabled]="creating || !isValid || isDemoUser"
+                  [title]="isDemoUser ? 'Demo users cannot create tenants' : ''">
+            {{ creating ? 'Creating...' : 'Create Tenant' }}
+          </button>
+        </div>
+        <div class="form-error" *ngIf="error">{{ error }}</div>
+        <div class="form-success" *ngIf="successMsg">{{ successMsg }}</div>
+      </div>
+    </div>
