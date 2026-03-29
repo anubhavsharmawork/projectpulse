@@ -102,6 +102,16 @@ public class TeamsControllerTests
     }
 
     [Fact]
+    public async Task AssignToProject_OtherException_Propagates()
+    {
+        _mediator.Setup(m => m.Send(It.IsAny<AssignToProjectCommand>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Unexpected"));
+        var request = new AssignToProjectRequest("user", "Developer", null, null, 40, 0);
+
+        await Assert.ThrowsAsync<Exception>(() => _controller.AssignToProject(Guid.NewGuid(), request));
+    }
+
+    [Fact]
     public async Task GetMembersByProject_ReturnsOk()
     {
         _mediator.Setup(m => m.Send(It.IsAny<GetTeamMembersByProjectQuery>(), It.IsAny<CancellationToken>()))

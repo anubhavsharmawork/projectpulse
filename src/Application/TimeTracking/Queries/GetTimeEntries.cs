@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ namespace Application.TimeTracking.Queries
         DateTime? From = null,
         DateTime? To = null) : IRequest<List<TimeEntryDto>>;
 
+    [ExcludeFromCodeCoverage]
     public record TimeEntryDto(
         Guid Id,
         Guid WorkItemId,

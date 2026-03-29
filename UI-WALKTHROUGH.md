@@ -858,7 +858,7 @@ The Workflow Board uses a **button-based transition model** rather than native d
 
 For each screenshot, capture at **1280×800** minimum resolution in a Chromium-based browser.
 
-### 6.1 Login Screen - `login.png`
+### 6.1 Login Screen  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -870,7 +870,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout F | Submit button | Capture both enabled and disabled states |
 | Callout G | Footer link | "Navigation to registration" |
 
-### 6.2 Registration Screen - `register.png`
+### 6.2 Registration Screen  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -880,7 +880,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout D | Password mismatch | Capture the warning state |
 | Callout E | Terms checkbox | Show both checked and unchecked states |
 
-### 6.3 Legal Acceptance - `legal-acceptance.png`
+### 6.3 Legal Acceptance  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -889,7 +889,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout C | Both checkboxes | Show both checked |
 | Callout D | Accept button | Show enabled state |
 
-### 6.4 Projects Dashboard - `projects-dashboard.png`
+### 6.4 Projects Dashboard  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -900,7 +900,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout E | Progress section | Show 2-3 project progress bars |
 | **Visual state** | | Capture with 3+ project cards visible |
 
-### 6.5 Work Items View - `work-items-view.png`
+### 6.5 Work Items View  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -910,7 +910,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout D | Nested tree | Highlight 3-level hierarchy |
 | **Sample data** | | Epic: "Patient Onboarding", Story: "Digital Intake", Task: "Design UI" |
 
-### 6.6 Workflow Board - `workflow-board.png`
+### 6.6 Workflow Board  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -920,7 +920,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout D | Required dot | Show red required-fields indicator |
 | **Columns** | | 4 columns: Backlog (3), In Progress (2), Review (1), Done (4) |
 
-### 6.7 Team Management - `team-management.png`
+### 6.7 Team Management  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -929,7 +929,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout C | Members table | 3-5 members with varied roles and skills |
 | Callout D | Capacity table | Show utilisation bars at different levels |
 
-### 6.8 Analytics Dashboard - `analytics-dashboard.png`
+### 6.8 Analytics Dashboard  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -938,7 +938,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout C | Domain sections | Show at least IT + Healthcare KPIs |
 | Callout D | Budget table | 3 projects with varied variance colours |
 
-### 6.9 Notifications - `notifications-center.png`
+### 6.9 Notifications 
 
 | Annotation | Position | Content |
 |-----------|----------|---------|
@@ -947,7 +947,7 @@ For each screenshot, capture at **1280×800** minimum resolution in a Chromium-b
 | Callout C | Type icons | Label each colour/icon pair |
 | Callout D | Mark all read | Highlight button |
 
-### 6.10 System Admin - `system-admin.png`
+### 6.10 System Admin  
 
 | Annotation | Position | Content |
 |-----------|----------|---------|

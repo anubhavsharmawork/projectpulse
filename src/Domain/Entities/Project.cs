@@ -2,18 +2,13 @@ using Domain.Enums;
 
 namespace Domain.Entities
 {
-    public class Project
+    public class Project : BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid TenantId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public Guid OwnerId { get; set; }
         public bool IsPublic { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-        public string CreatedBy { get; set; } = string.Empty;
-        public bool IsActive { get; set; } = true;
 
         // Domain-agnostic PM fields
         public DomainType DomainType { get; set; }

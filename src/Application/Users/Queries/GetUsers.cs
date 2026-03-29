@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -5,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Users.Queries
 {
     public record GetUsersQuery(string? SearchTerm = null) : IRequest<List<UserDto>>;
-    
+
+    [ExcludeFromCodeCoverage]
     public record UserDto(Guid Id, string Email, string DisplayName);
 
     public class GetUsersHandler : IRequestHandler<GetUsersQuery, List<UserDto>>

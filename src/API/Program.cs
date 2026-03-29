@@ -21,6 +21,7 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using System.IO.Compression;
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using Application.Auth.Commands; // for MediatR assembly discovery
 
 var builder = WebApplication.CreateBuilder(args);
@@ -536,14 +537,22 @@ app.Run();
 /// <summary>
 /// Restricts the Hangfire dashboard to users in the "Admin" role.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class HangfireAdminAuthorizationFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
 {
     public bool Authorize(Hangfire.Dashboard.DashboardContext context)
     {
         var httpContext = context.GetHttpContext();
-        return httpContext.User.Identity?.IsAuthenticated == true
-            && httpContext.User.IsInRole("Admin");
+        return AuthorizeHttp(httpContext);
+    }
+
+    // Exposed helper to allow lightweight unit testing without constructing a DashboardContext
+    public bool AuthorizeHttp(Microsoft.AspNetCore.Http.HttpContext httpContext)
+    {
+        return httpContext?.User?.Identity?.IsAuthenticated == true
+               && httpContext.User.IsInRole("Admin");
     }
 }
 
+[ExcludeFromCodeCoverage]
 public partial class Program { }

@@ -9,6 +9,7 @@
 <br/>
 
 [![CI/CD](https://github.com/anubhavsharmawork/projectpulse/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/anubhavsharmawork/projectpulse/actions/workflows/ci-cd.yml)
+[![codecov](https://codecov.io/gh/anubhavsharmawork/projectpulse/graph/badge.svg?token=XD46NA9ZB2)](https://codecov.io/gh/anubhavsharmawork/projectpulse)
 ![Lighthouse](https://img.shields.io/badge/Lighthouse-100%2F100-00CC66?logo=lighthouse&logoColor=white)
 ![OWASP](https://img.shields.io/badge/Security-OWASP_Top_10-green?logo=owasp)
 
@@ -19,7 +20,7 @@
 
 <br/>
 
-**A full-stack application demonstrating enterprise-grade software engineering practices.**
+**A full-stack application built with enterprise-grade software engineering practices.**
 
 **One codebase. Seven+ industry domains. Zero base-logic forks.** Project Pulse proves that careful architecture outlasts clever shortcuts - a single template-driven engine serves IT, Healthcare, Construction, Infrastructure, Public Safety, Economic Development, and Technology projects without a single domain-specific `if` branch in the core pipeline.
 
@@ -332,7 +333,7 @@ graph LR
 ## Project Structure
 
 ```
-projectPulseDec2025/
+projectpulse/
 ├── src/
 │   ├── Domain/                   # Entities, Enums, Value Objects
 │   ├── Application/              # CQRS Commands/Queries, DTOs, Interfaces

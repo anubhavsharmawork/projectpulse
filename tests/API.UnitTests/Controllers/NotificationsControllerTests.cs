@@ -57,4 +57,14 @@ public class NotificationsControllerTests
 
         result.Should().BeOfType<OkObjectResult>();
     }
+
+    [Fact]
+    public async Task MarkAllRead_MediatorThrows_PropagatesException()
+    {
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<MarkAllNotificationsReadCommand>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("DB error"));
+
+        await Assert.ThrowsAsync<Exception>(() => _controller.MarkAllRead());
+    }
 }

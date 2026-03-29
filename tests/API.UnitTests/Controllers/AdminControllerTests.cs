@@ -31,4 +31,14 @@ public class AdminControllerTests
 
         result.Should().BeOfType<OkObjectResult>();
     }
+
+    [Fact]
+    public async Task GetRoles_MediatorThrows_PropagatesException()
+    {
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<GetRolesQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("DB down"));
+
+        await Assert.ThrowsAsync<Exception>(() => _controller.GetRoles());
+    }
 }

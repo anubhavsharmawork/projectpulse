@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ namespace Application.Users.Queries
 {
     public record ResolveUsernameQuery(string Username) : IRequest<ResolvedUserDto?>;
 
+    [ExcludeFromCodeCoverage]
     public record ResolvedUserDto(string DisplayName, string UserName);
 
     public class ResolveUsernameHandler : IRequestHandler<ResolveUsernameQuery, ResolvedUserDto?>

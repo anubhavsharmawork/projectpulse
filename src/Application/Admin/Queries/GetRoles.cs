@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Application.Common.Interfaces;
 using Domain.Entities;
 using MediatR;
@@ -9,16 +10,20 @@ namespace Application.Admin.Queries
     public record GetRolesQuery : IRequest<List<RoleDto>>;
 
     // ── DTOs ──
+
+    [ExcludeFromCodeCoverage]
     public record RoleDto(
         string Name,
         string SystemRole,
         string? Description,
         List<PermissionCategoryDto> PermissionCategories);
 
+    [ExcludeFromCodeCoverage]
     public record PermissionCategoryDto(
         string Category,
         List<PermissionItemDto> Permissions);
 
+    [ExcludeFromCodeCoverage]
     public record PermissionItemDto(
         string Name,
         string? Description,

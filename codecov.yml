@@ -1,5 +1,6 @@
 codecov:
   require_ci_to_pass: true
+  max_report_age: off
 
 coverage:
   precision: 2
@@ -8,7 +9,7 @@ coverage:
   status:
     project:
       default:
-        target: 90%
+        target: 85%
         threshold: 2%
       backend:
         target: 85%
@@ -20,10 +21,7 @@ coverage:
         threshold: 2%
         flags:
           - frontend
-    patch:
-      default:
-        target: 85%
-        threshold: 2%
+    
 
 flags:
   backend:

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ namespace Application.Budget.Queries
 {
     public record GetBudgetStatusQuery() : IRequest<List<ProjectBudgetDto>>;
 
+    [ExcludeFromCodeCoverage]
     public record ProjectBudgetDto(
         Guid ProjectId,
         string ProjectName,

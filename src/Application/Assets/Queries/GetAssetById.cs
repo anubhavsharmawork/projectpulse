@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Application.Common.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
@@ -8,6 +9,7 @@ namespace Application.Assets.Queries
 {
     public record GetAssetByIdQuery(Guid AssetId) : IRequest<AssetDetailDto?>;
 
+    [ExcludeFromCodeCoverage]
     public record AssetDetailDto(
         Guid Id,
         Guid ProjectId,
